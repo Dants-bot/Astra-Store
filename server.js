@@ -17,7 +17,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'astra.db');
 const db = new Database(DB_PATH);
 
-// Habilitar WAL para melhor performance
 db.pragma('journal_mode = WAL');
 
 // ── Criar tabelas ───────────────────────────────────────────────────────────
@@ -56,6 +55,7 @@ db.exec(`
     status    TEXT    DEFAULT 'pendente',
     token     TEXT    UNIQUE,
     usado     INTEGER DEFAULT 0,
+    mp_id     TEXT,
     data      TEXT    DEFAULT (datetime('now'))
   );
 
@@ -74,24 +74,21 @@ db.exec(`
   );
 `);
 
-// ── Inserir dados padrão ────────────────────────────────────────────────────
+// Adicionar coluna mp_id se não existir (migração)
+try { db.exec('ALTER TABLE orders ADD COLUMN mp_id TEXT'); } catch(e) {}
+
+// ── Dados padrão ────────────────────────────────────────────────────────────
 const settingsDefaults = [
   ['pix',        'sua-chave-pix-aqui'],
   ['adminPass',  'admin123'],
   ['storeName',  'Astra Store'],
   ['discord',    'https://discord.gg/M4r4wuNk2h'],
 ];
-const insertSetting = db.prepare(
-  'INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)'
-);
+const insertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
 settingsDefaults.forEach(([k, v]) => insertSetting.run(k, v));
 
-// Cupom padrão
-db.prepare(
-  "INSERT OR IGNORE INTO coupons (cod, desc, usos, max, ativo) VALUES ('ASTRA10', 10, 0, 100, 1)"
-).run();
+db.prepare("INSERT OR IGNORE INTO coupons (cod, desc, usos, max, ativo) VALUES ('ASTRA10', 10, 0, 100, 1)").run();
 
-// Jogos padrão (só insere se não existirem)
 const DEFAULT_GAMES = [
   {id:1,  nome:"Elden Ring",                           preco:24.99, cat:"⚔️ RPG & Souls"},
   {id:2,  nome:"Sekiro: Shadows Die Twice",             preco:19.99, cat:"⚔️ RPG & Souls"},
@@ -179,7 +176,7 @@ DEFAULT_GAMES.forEach(g => insertGame.run({
   link: g.link || null, estoque: g.estoque || 999
 }));
 
-// ── Helper ──────────────────────────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────────
 function getSetting(key) {
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
   return row ? row.value : null;
@@ -195,13 +192,11 @@ function checkAdminPass(pass) {
 //  ROTAS — JOGOS
 // ════════════════════════════════════════════════════════════════════════════
 
-// GET todos os jogos
 app.get('/api/games', (req, res) => {
   const games = db.prepare('SELECT * FROM games WHERE ativo = 1 ORDER BY id').all();
   res.json(games);
 });
 
-// POST criar jogo (admin)
 app.post('/api/games', (req, res) => {
   const { adminPass, nome, preco, promo, cat, tag, img, link, estoque, desc_txt } = req.body;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
@@ -215,7 +210,6 @@ app.post('/api/games', (req, res) => {
   res.json({ ok: true, id: result.lastInsertRowid });
 });
 
-// PUT editar jogo (admin)
 app.put('/api/games/:id', (req, res) => {
   const { adminPass, nome, preco, promo, cat, tag, img, link, estoque, desc_txt } = req.body;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
@@ -228,11 +222,9 @@ app.put('/api/games/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE jogo (admin)
 app.delete('/api/games/:id', (req, res) => {
   const { adminPass } = req.body;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
-
   db.prepare('UPDATE games SET ativo = 0 WHERE id = ?').run(req.params.id);
   res.json({ ok: true });
 });
@@ -241,7 +233,6 @@ app.delete('/api/games/:id', (req, res) => {
 //  ROTAS — USUÁRIOS
 // ════════════════════════════════════════════════════════════════════════════
 
-// POST cadastro
 app.post('/api/users/register', async (req, res) => {
   const { nome, email, senha } = req.body;
   if (!nome || !email || !senha) return res.status(400).json({ error: 'Preencha todos os campos' });
@@ -252,11 +243,9 @@ app.post('/api/users/register', async (req, res) => {
 
   const hash = await bcrypt.hash(senha, 10);
   const result = db.prepare('INSERT INTO users (nome, email, senha) VALUES (?, ?, ?)').run(nome, email, hash);
-
   res.json({ ok: true, user: { id: result.lastInsertRowid, nome, email } });
 });
 
-// POST login
 app.post('/api/users/login', async (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) return res.status(400).json({ error: 'Preencha todos os campos' });
@@ -274,7 +263,6 @@ app.post('/api/users/login', async (req, res) => {
 //  ROTAS — PEDIDOS
 // ════════════════════════════════════════════════════════════════════════════
 
-// POST criar pedido
 app.post('/api/orders', (req, res) => {
   const { user_id, c_nome, c_email, itens, valor } = req.body;
   if (!itens || !valor) return res.status(400).json({ error: 'Dados incompletos' });
@@ -282,7 +270,6 @@ app.post('/api/orders', (req, res) => {
   const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
   const j_nome = Array.isArray(itens) ? itens.map(i => i.nome).join(', ') : '';
 
-  // Registrar pedido como pendente (aguardando pagamento)
   const result = db.prepare(`
     INSERT INTO orders (user_id, c_nome, c_email, j_nome, itens, valor, status, token)
     VALUES (?, ?, ?, ?, ?, ?, 'pendente', ?)
@@ -291,50 +278,36 @@ app.post('/api/orders', (req, res) => {
   res.json({ ok: true, id: result.lastInsertRowid, token });
 });
 
-// GET verificar token de entrega
 app.get('/api/orders/token/:token', (req, res) => {
   const order = db.prepare('SELECT * FROM orders WHERE token = ?').get(req.params.token);
   if (!order) return res.status(404).json({ error: 'Token inválido ou expirado' });
   if (order.usado) return res.status(410).json({ error: 'Este link já foi utilizado' });
 
-  // Buscar links dos jogos
   const itens = JSON.parse(order.itens || '[]');
   const itensComLink = itens.map(item => {
     const g = db.prepare('SELECT link, img FROM games WHERE id = ?').get(item.id);
     return { ...item, link: g ? g.link : null, img: g ? g.img : null };
   });
 
-  // Marcar como usado
   db.prepare('UPDATE orders SET usado = 1, status = "entregue" WHERE id = ?').run(order.id);
-
-  res.json({
-    ok: true,
-    order: { ...order, itens: itensComLink }
-  });
+  res.json({ ok: true, order: { ...order, itens: itensComLink } });
 });
 
-// GET pedidos de um usuário
 app.get('/api/orders/user/:email', (req, res) => {
-  const orders = db.prepare(
-    'SELECT * FROM orders WHERE c_email = ? ORDER BY id DESC'
-  ).all(req.params.email);
+  const orders = db.prepare('SELECT * FROM orders WHERE c_email = ? ORDER BY id DESC').all(req.params.email);
   res.json(orders.map(o => ({ ...o, itens: JSON.parse(o.itens || '[]') })));
 });
 
-// GET todos os pedidos (admin)
 app.get('/api/orders', (req, res) => {
   const { adminPass } = req.query;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
-
   const orders = db.prepare('SELECT * FROM orders ORDER BY id DESC').all();
   res.json(orders.map(o => ({ ...o, itens: JSON.parse(o.itens || '[]') })));
 });
 
-// PUT atualizar status do pedido (admin)
 app.put('/api/orders/:id/status', (req, res) => {
   const { adminPass, status } = req.body;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
-
   db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
   res.json({ ok: true });
 });
@@ -356,7 +329,6 @@ app.post('/api/coupons/use/:cod', (req, res) => {
   res.json({ ok: true });
 });
 
-// GET/POST cupons (admin)
 app.get('/api/coupons', (req, res) => {
   const { adminPass } = req.query;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
@@ -375,34 +347,148 @@ app.post('/api/coupons', (req, res) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 app.get('/api/settings', (req, res) => {
-  const pix = getSetting('pix');
-  const storeName = getSetting('storeName');
-  const discord = getSetting('discord');
-  // Não expor adminPass publicamente
-  res.json({ pix, storeName, discord });
+  res.json({
+    pix: getSetting('pix'),
+    storeName: getSetting('storeName'),
+    discord: getSetting('discord')
+  });
 });
 
 app.put('/api/settings', (req, res) => {
   const { adminPass, pix, storeName, discord, newAdminPass } = req.body;
   if (!checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
-
-  if (pix)         setSetting('pix', pix);
-  if (storeName)   setSetting('storeName', storeName);
-  if (discord)     setSetting('discord', discord);
+  if (pix)          setSetting('pix', pix);
+  if (storeName)    setSetting('storeName', storeName);
+  if (discord)      setSetting('discord', discord);
   if (newAdminPass) setSetting('adminPass', newAdminPass);
-
   res.json({ ok: true });
 });
 
 // ════════════════════════════════════════════════════════════════════════════
-//  ROTA PRINCIPAL — servir o HTML
+//  MERCADO PAGO — PIX AUTOMÁTICO
+// ════════════════════════════════════════════════════════════════════════════
+
+const MP_TOKEN = process.env.MP_TOKEN || 'APP_USR-4589314192189182-052011-63d1db0b6b831f764ce00ce3b9d42b6c-637849852';
+
+// POST /api/pix — Criar pagamento PIX no Mercado Pago
+app.post('/api/pix', async (req, res) => {
+  try {
+    const { valor, nome, email, jogos, pedidoId } = req.body;
+    if (!valor || valor <= 0) return res.status(400).json({ error: 'Valor inválido' });
+    if (!email)               return res.status(400).json({ error: 'Email obrigatório' });
+
+    const extRef = pedidoId || ('astra-' + Date.now());
+    const railwayUrl = process.env.RAILWAY_URL || '';
+
+    const body = {
+      transaction_amount: parseFloat(parseFloat(valor).toFixed(2)),
+      description: 'Astra Store — ' + (jogos || 'Jogos digitais'),
+      payment_method_id: 'pix',
+      payer: {
+        email: email,
+        first_name: (nome || 'Cliente').split(' ')[0],
+        last_name:  (nome || 'Cliente').split(' ').slice(1).join(' ') || 'Astra',
+        identification: { type: 'CPF', number: '00000000000' }
+      },
+      external_reference: extRef,
+    };
+
+    if (railwayUrl) body.notification_url = railwayUrl + '/api/webhook';
+
+    const response = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: {
+        'Authorization':    'Bearer ' + MP_TOKEN,
+        'Content-Type':     'application/json',
+        'X-Idempotency-Key': extRef
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.point_of_interaction) {
+      console.error('[MP] Erro ao criar PIX:', JSON.stringify(data));
+      return res.status(400).json({ error: data.message || 'Erro ao criar PIX no Mercado Pago' });
+    }
+
+    const pix = data.point_of_interaction.transaction_data;
+
+    // Salvar mp_id no pedido se existir
+    if (pedidoId) {
+      try {
+        db.prepare('UPDATE orders SET mp_id = ? WHERE token = ?').run(String(data.id), pedidoId);
+      } catch(e) {}
+    }
+
+    res.json({
+      mpId:          data.id,
+      qrCode:        pix.qr_code,
+      qrCodeBase64:  pix.qr_code_base64,
+      valor:         parseFloat(valor),
+      status:        'pending'
+    });
+
+  } catch (e) {
+    console.error('[MP] Erro interno criar PIX:', e);
+    res.status(500).json({ error: 'Erro interno ao gerar PIX' });
+  }
+});
+
+// GET /api/pix/status/:mpId — Verificar status do pagamento
+app.get('/api/pix/status/:mpId', async (req, res) => {
+  try {
+    const response = await fetch('https://api.mercadopago.com/v1/payments/' + req.params.mpId, {
+      headers: { 'Authorization': 'Bearer ' + MP_TOKEN }
+    });
+    const data = await response.json();
+
+    // Se aprovado, marcar pedido como entregue
+    if (data.status === 'approved' && data.external_reference) {
+      const order = db.prepare('SELECT * FROM orders WHERE token = ?').get(data.external_reference);
+      if (order && order.status !== 'entregue') {
+        db.prepare("UPDATE orders SET status = 'entregue' WHERE token = ?").run(data.external_reference);
+      }
+    }
+
+    res.json({ status: data.status, mpId: req.params.mpId });
+  } catch (e) {
+    console.error('[MP] Erro verificar status:', e);
+    res.status(500).json({ error: 'Erro ao verificar pagamento' });
+  }
+});
+
+// POST /api/webhook — Webhook automático do Mercado Pago
+app.post('/api/webhook', async (req, res) => {
+  try {
+    const { type, data } = req.body;
+    if (type !== 'payment' || !data?.id) return res.sendStatus(200);
+
+    const response = await fetch('https://api.mercadopago.com/v1/payments/' + data.id, {
+      headers: { 'Authorization': 'Bearer ' + MP_TOKEN }
+    });
+    const payment = await response.json();
+
+    if (payment.status === 'approved' && payment.external_reference) {
+      db.prepare("UPDATE orders SET status = 'entregue' WHERE token = ?").run(payment.external_reference);
+      console.log('[MP] ✅ Pagamento aprovado automaticamente:', data.id, payment.external_reference);
+    }
+
+    res.sendStatus(200);
+  } catch (e) {
+    console.error('[MP] Webhook error:', e);
+    res.sendStatus(200);
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+//  ROTA PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ── Iniciar servidor ────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`✅ Astra Store rodando na porta ${PORT}`);
 });
