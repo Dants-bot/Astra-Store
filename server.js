@@ -368,7 +368,7 @@ app.put('/api/settings', (req, res) => {
 //  MERCADO PAGO — PIX AUTOMÁTICO
 // ════════════════════════════════════════════════════════════════════════════
 
-const MP_TOKEN = process.env.MP_TOKEN || 'TEST-1a2ac063-123a-4017-be8c-dda3fc92c463';
+const MP_TOKEN = process.env.MP_TOKEN || 'TEST-4589314192189182-052011-f70aed76bbb6e1de2fabf6e25eb21fa0-637849852';
 
 // POST /api/pix — Criar pagamento PIX no Mercado Pago
 app.post('/api/pix', async (req, res) => {
