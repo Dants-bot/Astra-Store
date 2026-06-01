@@ -858,15 +858,6 @@ body::before{
             <span id="ckTermsKnob" style="position:absolute;left:4px;top:4px;width:18px;height:18px;background:#fff;border-radius:50%;transition:0.3s;"></span>
           </label>
         </div>
-        <!-- PIX key -->
-        <div class="ck-card">
-          <div class="ck-section-label">Chave PIX para pagamento</div>
-          <div class="pix-box" onclick="copyPix()" style="margin:0;">
-            <div class="pix-label">⚡ Chave PIX (toque para copiar)</div>
-            <div class="pix-key" id="pixKeyDisplay">fa66843e-2dc8-4451-9ec2-999d4fd77a7c</div>
-            <div class="pix-hint">Após pagar, envie o comprovante no Discord</div>
-          </div>
-        </div>
         <!-- Pay button -->
         <button class="ck-pay-btn" onclick="finalizarPagamento()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
@@ -1388,7 +1379,10 @@ const DEFAULT_GAMES = [
 //  SECURITY
 // ════════════════════════════════════════
 var SEC={
-  esc:function(s){if(typeof s!=='string')return s;return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  esc:function(s){if(typeof s!=='string')return s;return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');},
+  clean:function(s,max){if(typeof s!=='string')return '';s=s.replace(/<[^>]*>/g,'').replace(/[<>"'`]/g,'').trim();return max?s.slice(0,max):s;},
+  _rl:{},
+  rateLimit:function(key,max,ms){var now=Date.now();if(!this._rl[key])this._rl[key]=[];this._rl[key]=this._rl[key].filter(function(t){return now-t<ms;});if(this._rl[key].length>=max)return false;this._rl[key].push(now);return true;}
 };
 document.addEventListener('contextmenu',function(e){if(e.target.closest&&e.target.closest('#adminPage'))e.preventDefault();});
 
@@ -1861,12 +1855,87 @@ function finalizarPagamento(){
   const ac=couponApplied||null;
   let total=cart.reduce((a,c)=>a+(c.preco*(c.qty||1)),0);
   if(ac)total=total*(1-ac.desc/100);
-  const order={id:Date.now(),cNome:SEC.clean(nome+' '+sob,120),cEmail:email,jNome:cart.map(c=>SEC.esc(c.nome)).join(', '),jId:cart[0]&&cart[0].id,valor:parseFloat(total.toFixed(2)),status:'pendente',data:new Date().toLocaleDateString('pt-BR')};
-  store.orders.push(order);save();
-  if(ac){const ci=store.coupons.find(x=>x.id===ac.id);if(ci)ci.usos++;save();}
-  toast('✅ Pedido registrado! Pague o PIX e envie o comprovante no Discord.');
-  closeCheckoutPage();cart=[];saveC();renderCartItems();updateBadge();couponApplied=null;
-  setTimeout(()=>window.open(store.settings.discord||'https://discord.gg/M4r4wuNk2h','_blank'),1500);
+  total=parseFloat(total.toFixed(2));
+  const jogosNome=cart.map(c=>SEC.esc(c.nome)).join(', ');
+
+  // Registrar pedido no servidor
+  fetch('/api/orders',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({c_nome:SEC.clean(nome+' '+sob,120),c_email:email,itens:cart,valor:total})
+  })
+  .then(r=>r.json())
+  .then(ord=>{
+    if(!ord.ok){toast('❌ Erro ao registrar pedido.');return;}
+    const pedidoToken=ord.token;
+    // Gerar PIX no Mercado Pago
+    const btn=document.querySelector('.ck-pay-btn');
+    if(btn){btn.disabled=true;btn.innerHTML='⏳ Gerando PIX...';}
+    return fetch('/api/pix',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({valor:total,nome:SEC.clean(nome+' '+sob,120),email:email,jogos:jogosNome,pedidoId:pedidoToken})
+    })
+    .then(r=>r.json())
+    .then(pix=>{
+      if(btn){btn.disabled=false;btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pagar R$ '+total.toFixed(2).replace('.',',');}
+      if(pix.error){toast('❌ '+pix.error);return;}
+      if(ac){const ci=store.coupons.find(x=>x.id===ac.id);if(ci)ci.usos++;save();}
+      abrirModalPix(pix,pedidoToken,email,total);
+    });
+  })
+  .catch(()=>{
+    const btn=document.querySelector('.ck-pay-btn');
+    if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
+    toast('❌ Erro de conexão. Verifique se o servidor está rodando.');
+  });
+}
+
+var _pixPollInterval=null;
+function abrirModalPix(pix,token,email,valor){
+  closeCheckoutPage();
+  // Criar modal do QR Code
+  var old=document.getElementById('pixModal');
+  if(old)old.remove();
+  var m=document.createElement('div');
+  m.id='pixModal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  m.innerHTML=`
+    <div style="background:#111;border:1px solid rgba(109,40,217,0.4);border-radius:16px;padding:2rem;max-width:420px;width:100%;text-align:center;box-shadow:0 0 40px rgba(109,40,217,0.2);">
+      <div style="font-family:'Orbitron',monospace;font-weight:800;font-size:1.1rem;margin-bottom:0.3rem;">ASTRA <span style="color:#7c3aed;">STORE</span></div>
+      <div style="color:#22d3ee;font-weight:700;font-size:1rem;margin-bottom:0.2rem;">⚡ Pague com PIX</div>
+      <div style="color:#888;font-size:0.8rem;margin-bottom:1.2rem;">Escaneie o QR Code ou copie o código</div>
+      ${pix.qrCodeBase64?`<img src="data:image/png;base64,${pix.qrCodeBase64}" style="width:200px;height:200px;border-radius:12px;background:#fff;padding:8px;margin-bottom:1rem;" alt="QR Code PIX">`:''}
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:10px 14px;margin-bottom:1rem;word-break:break-all;font-size:0.72rem;color:#aaa;cursor:pointer;" onclick="navigator.clipboard.writeText('${(pix.qrCode||'').replace(/'/g,"\\'")}');toast('✅ Código PIX copiado!');" title="Clique para copiar">
+        ${pix.qrCode||''}
+      </div>
+      <button onclick="navigator.clipboard.writeText('${(pix.qrCode||'').replace(/'/g,"\\'")}');toast('✅ Código PIX copiado!');" style="width:100%;padding:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:10px;font-weight:800;font-size:0.95rem;cursor:pointer;margin-bottom:10px;">📋 Copiar código PIX</button>
+      <div id="pixStatus" style="padding:10px;border-radius:8px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);color:#eab308;font-size:0.82rem;font-weight:600;margin-bottom:10px;">⏳ Aguardando pagamento...</div>
+      <div style="font-size:0.75rem;color:#555;">Produto entregue por email: <strong style="color:#aaa;">${email}</strong></div>
+      <div style="font-size:0.72rem;color:#444;margin-top:4px;">Valor: <strong style="color:#22d3ee;">R$ ${valor.toFixed(2).replace('.',',')}</strong></div>
+    </div>`;
+  document.body.appendChild(m);
+  cart=[];saveC();renderCartItems();updateBadge();couponApplied=null;
+  // Polling para verificar pagamento
+  if(_pixPollInterval)clearInterval(_pixPollInterval);
+  var tentativas=0;
+  _pixPollInterval=setInterval(function(){
+    tentativas++;
+    if(tentativas>60){clearInterval(_pixPollInterval);return;}
+    fetch('/api/pix/status/'+pix.mpId)
+    .then(r=>r.json())
+    .then(s=>{
+      if(s.status==='approved'){
+        clearInterval(_pixPollInterval);
+        document.getElementById('pixStatus').style.background='rgba(34,197,94,0.1)';
+        document.getElementById('pixStatus').style.borderColor='rgba(34,197,94,0.3)';
+        document.getElementById('pixStatus').style.color='#22c55e';
+        document.getElementById('pixStatus').innerHTML='✅ Pagamento aprovado! Verifique seu email.';
+        toast('🎉 Pagamento confirmado!');
+        setTimeout(function(){m.remove();},5000);
+      }
+    }).catch(()=>{});
+  },5000);
 }
 
 // ════════════════════════════════════════
