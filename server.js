@@ -368,7 +368,62 @@ app.put('/api/settings', (req, res) => {
 //  MERCADO PAGO — PIX AUTOMÁTICO
 // ════════════════════════════════════════════════════════════════════════════
 
-const MP_TOKEN = process.env.MP_TOKEN || 'APP_USR-7723937893150157-060108-5334f97e87d608ae628e65c0a239eeaa-3442320578';
+const MP_TOKEN = process.env.MP_TOKEN || 'APP_USR-4589314192189182-052011-63d1db0b6b831f764ce00ce3b9d42b6c-637849852';
+
+// POST /api/checkout — Criar preferência Checkout Pro
+app.post('/api/checkout', async (req, res) => {
+  try {
+    const { valor, nome, email, jogos, pedidoId } = req.body;
+    if (!valor || valor <= 0) return res.status(400).json({ error: 'Valor inválido' });
+    if (!email) return res.status(400).json({ error: 'Email obrigatório' });
+
+    const railwayUrl = process.env.RAILWAY_URL || 'https://astra-store-production.up.railway.app';
+    const extRef = pedidoId || ('astra-' + Date.now());
+
+    const body = {
+      items: [{
+        title: jogos || 'Jogos digitais — Astra Store',
+        quantity: 1,
+        unit_price: parseFloat(parseFloat(valor).toFixed(2)),
+        currency_id: 'BRL'
+      }],
+      payer: { email: email, name: nome || 'Cliente' },
+      external_reference: extRef,
+      back_urls: {
+        success: railwayUrl + '/?pagamento=aprovado',
+        failure: railwayUrl + '/?pagamento=falhou',
+        pending: railwayUrl + '/?pagamento=pendente'
+      },
+      auto_return: 'approved',
+      notification_url: railwayUrl + '/api/webhook',
+      payment_methods: {
+        excluded_payment_types: [],
+        installments: 1
+      }
+    };
+
+    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + MP_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.init_point) {
+      console.error('[MP] Erro ao criar preferência:', JSON.stringify(data));
+      return res.status(400).json({ error: data.message || 'Erro ao criar checkout' });
+    }
+
+    res.json({ checkoutUrl: data.init_point, id: data.id });
+  } catch (err) {
+    console.error('[MP] Checkout erro:', err);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
 
 // POST /api/pix — Criar pagamento PIX no Mercado Pago
 app.post('/api/pix', async (req, res) => {
