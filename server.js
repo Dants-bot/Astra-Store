@@ -368,7 +368,8 @@ app.put('/api/settings', (req, res) => {
 //  MERCADO PAGO — PIX AUTOMÁTICO
 // ════════════════════════════════════════════════════════════════════════════
 
-const MP_TOKEN = process.env.MP_TOKEN || 'APP_USR-4589314192189182-052011-63d1db0b6b831f764ce00ce3b9d42b6c-637849852';
+const MP_TOKEN = process.env.MP_TOKEN;
+if (!MP_TOKEN) { console.error('ERRO: MP_TOKEN nao definido no Railway!'); process.exit(1); }
 
 // POST /api/pix — Criar pagamento PIX no Mercado Pago
 app.post('/api/pix', async (req, res) => {
