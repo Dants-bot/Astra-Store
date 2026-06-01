@@ -1895,8 +1895,61 @@ function finalizarPagamento(){
     toast('❌ Erro de conexão. Verifique se o servidor está rodando.');
   });
 }
+// Função para disparar quando o cliente clicar em pagar com Pix
+async function criarPagamentoPix() {
+    try {
+        // 1. Cria o pedido no banco primeiro (Astra DB)
+        const responsePedido = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                c_nome: "Cliente de Teste",
+                c_email: "test_user_123@testuser.com", 
+                itens: [{ id: 1, nome: "Elden Ring", preco: 24.99 }], 
+                valor: 24.99
+            })
+        });
+        const dadosPedido = await responsePedido.json();
+        
+        // 2. Envia para a sua rota do Mercado Pago
+        const responseMP = await fetch('/api/pix', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                valor: 24.99,
+                nome: "Cliente de Teste",
+                email: "test_user_123@testuser.com",
+                jogos: "Elden Ring",
+                pedidoId: dadosPedido.token
+            })
+        });
 
-var _pixPollInterval=null;
+        const dadosMP = await responseMP.json();
+
+        // 3. Abre o modal que já existe no seu site
+        if (dadosMP.qrCodeBase64 && dadosMP.qrCode) {
+            abrirModalPix(dadosMP, dadosPedido.token, "test_user_123@testuser.com", 24.99);
+            console.log("Pix gerado e modal aberto com sucesso!");
+        } else {
+            alert("Erro ao ler dados do Pix enviados pelo servidor.");
+        }
+
+    } catch (error) {
+        console.error("Erro no processo:", error);
+    }
+}
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  var _pixPollInterval=null;
 function abrirModalPix(pix,token,email,valor){
   closeCheckoutPage();
   // Criar modal do QR Code
