@@ -368,7 +368,7 @@ app.put('/api/settings', (req, res) => {
 //  MERCADO PAGO — PIX AUTOMÁTICO
 // ════════════════════════════════════════════════════════════════════════════
 
-const MP_TOKEN = process.env.MP_TOKEN || 'TEST-4589314192189182-052011-f70aed76bbb6e1de2fabf6e25eb21fa0-637849852
+const MP_TOKEN = process.env.MP_TOKEN || 'TEST-4589314192189182-052011-f70aed76bbb6e1de2fabf6e25eb21fa0-637849852'
 
 // POST /api/checkout — Criar preferência Checkout Pro
 app.post('/api/checkout', async (req, res) => {
