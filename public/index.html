@@ -1858,7 +1858,10 @@ function finalizarPagamento(){
   total=parseFloat(total.toFixed(2));
   const jogosNome=cart.map(c=>SEC.esc(c.nome)).join(', ');
 
-  // Registrar pedido no servidor
+  const btn=document.querySelector('.ck-pay-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ Redirecionando para pagamento...';}
+
+  // Registrar pedido e abrir Checkout Pro
   fetch('/api/orders',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -1866,26 +1869,28 @@ function finalizarPagamento(){
   })
   .then(r=>r.json())
   .then(ord=>{
-    if(!ord.ok){toast('❌ Erro ao registrar pedido.');return;}
+    if(!ord.ok){
+      if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
+      toast('❌ Erro ao registrar pedido.');return;
+    }
     const pedidoToken=ord.token;
-    // Gerar PIX no Mercado Pago
-    const btn=document.querySelector('.ck-pay-btn');
-    if(btn){btn.disabled=true;btn.innerHTML='⏳ Gerando PIX...';}
-    return fetch('/api/pix',{
+    return fetch('/api/checkout',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({valor:total,nome:SEC.clean(nome+' '+sob,120),email:email,jogos:jogosNome,pedidoId:pedidoToken})
     })
     .then(r=>r.json())
-    .then(pix=>{
-      if(btn){btn.disabled=false;btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pagar R$ '+total.toFixed(2).replace('.',',');}
-      if(pix.error){toast('❌ '+pix.error);return;}
+    .then(data=>{
+      if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
+      if(data.error){toast('❌ '+data.error);return;}
       if(ac){const ci=store.coupons.find(x=>x.id===ac.id);if(ci)ci.usos++;save();}
-      abrirModalPix(pix,pedidoToken,email,total);
+      cart=[];saveC();renderCartItems();updateBadge();couponApplied=null;
+      closeCheckoutPage();
+      toast('✅ Redirecionando para o Mercado Pago...');
+      setTimeout(()=>window.location.href=data.checkoutUrl,800);
     });
   })
   .catch(()=>{
-    const btn=document.querySelector('.ck-pay-btn');
     if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
     toast('❌ Erro de conexão. Verifique se o servidor está rodando.');
   });
