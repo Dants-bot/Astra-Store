@@ -388,7 +388,7 @@ app.post('/api/pix', async (req, res) => {
         email: email,
         first_name: (nome || 'Cliente').split(' ')[0],
         last_name:  (nome || 'Cliente').split(' ').slice(1).join(' ') || 'Astra',
-        identification: { type: 'CPF', number: '00000000000' }
+        identification: { type: 'CPF', number: '12345678909' }
       },
       external_reference: extRef,
     };
