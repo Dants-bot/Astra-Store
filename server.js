@@ -368,7 +368,7 @@ app.put('/api/settings', (req, res) => {
 //  MERCADO PAGO — PIX AUTOMÁTICO
 // ════════════════════════════════════════════════════════════════════════════
 
-const MP_TOKEN = process.env.MP_TOKEN || 'TEST-4589314192189182-052011-f70aed76bbb6e1de2fabf6e25eb21fa0-637849852';
+const MP_TOKEN = process.env.MP_TOKEN || 'APP_USR-4589314192189182-052011-63d1db0b6b831f764ce00ce3b9d42b6c-637849852';
 
 // POST /api/checkout — Criar preferência Checkout Pro
 app.post('/api/checkout', async (req, res) => {
@@ -396,10 +396,16 @@ app.post('/api/checkout', async (req, res) => {
       },
       auto_return: 'approved',
       notification_url: railwayUrl + '/api/webhook',
+      // Permitir pagamento sem login no MP
+      purpose: 'onboarding_credits',
       payment_methods: {
-        excluded_payment_types: [],
-        installments: 1
-      }
+        excluded_payment_types: [{ id: 'ticket' }], // remove boleto
+        excluded_payment_methods: [],
+        installments: 1,
+        default_payment_method_id: 'pix'
+      },
+      binary_mode: true, // aprovado ou reprovado, sem pendente
+      statement_descriptor: 'ASTRA STORE' // descrição na fatura do cartão
     };
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
