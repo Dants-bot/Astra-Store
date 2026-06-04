@@ -401,10 +401,7 @@ app.post('/api/checkout', async (req, res) => {
       // Permitir pagamento sem login no MP
       purpose: 'onboarding_credits',
       payment_methods: {
-        excluded_payment_types: [{ id: 'ticket' }], // remove boleto
-        excluded_payment_methods: [],
-        installments: 1,
-        default_payment_method_id: 'pix'
+        installments: 1
       },
       binary_mode: true, // aprovado ou reprovado, sem pendente
       statement_descriptor: 'ASTRA STORE' // descrição na fatura do cartão
