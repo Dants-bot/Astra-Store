@@ -1868,29 +1868,29 @@ function finalizarPagamento(){
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({c_nome:SEC.clean(nome+' '+sob,120),c_email:email,itens:cart,valor:total})
   })
-  .then(r=>r.json())
-  .then(ord=>{
+  .then(function(r){return r.json();})
+  .then(function(ord){
     if(!ord.ok){
       if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
       toast('❌ Erro ao registrar pedido.');return;
     }
     pedidoToken=ord.token;
-    // 2. Gerar PIX no Mercado Pago
-    return fetch('/api/pix',{
+    return fetch('/api/checkout',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({valor:total,nome:SEC.clean(nome+' '+sob,120),email:email,jogos:jogosNome,pedidoId:pedidoToken})
-    }).then(r=>r.json());
+    }).then(function(r){return r.json();});
   })
-  .then(data=>{
+  .then(function(data){
     if(!data)return;
     if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
     if(data.error){toast('❌ '+data.error);return;}
-    // 3. Mostrar QR Code PIX
-    abrirModalPix(data,pedidoToken,email,total);
-    if(ac){const ci=store.coupons.find(x=>x.id===ac.id);if(ci)ci.usos++;save();}
+    if(ac){var ci=store.coupons.find(function(x){return x.id===ac.id;});if(ci)ci.usos++;save();}
+    // Redirecionar para Checkout Pro do Mercado Pago
+    toast('✅ Redirecionando para pagamento...');
+    setTimeout(function(){window.location.href=data.checkoutUrl;},800);
   })
-  .catch(()=>{
+  .catch(function(){
     if(btn){btn.disabled=false;btn.innerHTML='Pagar R$ '+total.toFixed(2).replace('.',',');}
     toast('❌ Erro de conexão. Verifique se o servidor está rodando.');
   });
@@ -2493,10 +2493,46 @@ function startRandomNotifs(){
 }
 // INIT
 updateUserUI();updateBadge();renderCartItems();
-renderPromoDia();
-startRandomNotifs();
-showPage('home');
-document.body.style.visibility='visible';
+
+// Carregar jogos do servidor (Railway) e depois renderizar
+(function(){
+  fetch('/api/games')
+  .then(function(r){return r.json();})
+  .then(function(serverGames){
+    if(Array.isArray(serverGames)&&serverGames.length>0){
+      // Mesclar jogos do servidor com DEFAULT_GAMES
+      serverGames.forEach(function(sg){
+        // Mapear campos do banco para o formato do frontend
+        var g={
+          id:sg.id, nome:sg.nome, preco:sg.preco,
+          promo:sg.promo||null, cat:sg.cat||null,
+          tag:sg.tag||null, img:sg.img||null,
+          link:sg.link||null, estoque:sg.estoque||999,
+          desc:sg.desc_txt||null
+        };
+        var exists=store.games.find(function(x){return x.id===g.id;});
+        if(exists){
+          // Atualizar jogo existente com dados do servidor
+          Object.assign(exists,g);
+        } else {
+          store.games.push(g);
+        }
+      });
+    }
+  })
+  .catch(function(){
+    // Se falhar, usa os jogos do localStorage (fallback)
+    console.log('Usando jogos locais como fallback');
+  })
+  .finally(function(){
+    renderCatalog();
+    buildBanner();
+    renderPromoDia();
+    startRandomNotifs();
+    showPage('home');
+    document.body.style.visibility='visible';
+  });
+})();
 </script>
 
 <!-- DIAGNÓSTICO LOCALSTORAGE -->
