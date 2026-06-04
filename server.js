@@ -550,6 +550,14 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Rota temporária para resetar senha — REMOVA APÓS USAR
+app.get('/reset-pass', (req, res) => {
+  const { s, p } = req.query;
+  if(s !== 'astra2024') return res.status(403).send('Proibido');
+  setSetting('adminPass', p || 'admin123');
+  res.send('Senha atualizada para: ' + (p || 'admin123'));
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Astra Store rodando na porta ${PORT}`);
 });
