@@ -185,7 +185,9 @@ function setSetting(key, value) {
   db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, value);
 }
 function checkAdminPass(pass) {
-  return pass === getSetting('adminPass');
+  // Prioridade: variável de ambiente ADMIN_PASS > banco de dados
+  const correctPass = process.env.ADMIN_PASS || getSetting('adminPass');
+  return pass === correctPass;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
