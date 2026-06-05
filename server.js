@@ -200,14 +200,25 @@ app.get('/api/games', async (req, res) => {
 
 app.post('/api/games', async (req, res) => {
   try {
-    const { adminPass, nome, preco, promo, cat, tag, img, link, estoque, desc_txt } = req.body;
+    const { adminPass, nome, preco, promo, cat, tag, img, link, estoque, desc_txt, id: gameId } = req.body;
     if (!await checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
-    if (!nome || !preco) return res.status(400).json({ error: 'Nome e preço obrigatórios' });
-    const result = await q1(
-      `INSERT INTO games (nome,preco,promo,cat,tag,img,link,estoque,desc_txt)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-      [nome,preco,promo||null,cat||null,tag||null,img||null,link||null,estoque||999,desc_txt||null]
-    );
+    if (!nome || !preco) return res.status(400).json({ error: 'Nome e preco obrigatorios' });
+    let result;
+    if (gameId) {
+      result = await q1(
+        `INSERT INTO games (id,nome,preco,promo,cat,tag,img,link,estoque,desc_txt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+         ON CONFLICT (id) DO UPDATE SET nome=$2,preco=$3,promo=$4,cat=$5,tag=$6,img=$7,link=$8,estoque=$9,desc_txt=$10
+         RETURNING id`,
+        [gameId,nome,preco,promo||null,cat||null,tag||null,img||null,link||null,estoque||999,desc_txt||null]
+      );
+    } else {
+      result = await q1(
+        `INSERT INTO games (nome,preco,promo,cat,tag,img,link,estoque,desc_txt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [nome,preco,promo||null,cat||null,tag||null,img||null,link||null,estoque||999,desc_txt||null]
+      );
+    }
     res.json({ ok: true, id: result.id });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
