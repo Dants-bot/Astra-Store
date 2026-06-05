@@ -67,7 +67,7 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS coupons (
       id    SERIAL PRIMARY KEY,
       cod   TEXT    NOT NULL UNIQUE,
-      desc  INTEGER NOT NULL,
+      desconto  INTEGER NOT NULL,
       usos  INTEGER DEFAULT 0,
       max   INTEGER DEFAULT 100,
       ativo INTEGER DEFAULT 1
@@ -83,7 +83,7 @@ async function initDB() {
   await pool.query(`INSERT INTO settings (key,value) VALUES ('adminPass','admin123') ON CONFLICT (key) DO NOTHING`);
   await pool.query(`INSERT INTO settings (key,value) VALUES ('storeName','Astra Store') ON CONFLICT (key) DO NOTHING`);
   await pool.query(`INSERT INTO settings (key,value) VALUES ('discord','https://discord.gg/M4r4wuNk2h') ON CONFLICT (key) DO NOTHING`);
-  await pool.query(`INSERT INTO coupons (cod,desc,usos,max,ativo) VALUES ('ASTRA10',10,0,100,1) ON CONFLICT (cod) DO NOTHING`);
+  await pool.query(`INSERT INTO coupons (cod,desconto,usos,max,ativo) VALUES ('ASTRA10',10,0,100,1) ON CONFLICT (cod) DO NOTHING`);
 
   // Jogos padrão
   const DEFAULT_GAMES = [
@@ -329,7 +329,7 @@ app.get('/api/coupons/validate/:cod', async (req, res) => {
   try {
     const c = await q1("SELECT * FROM coupons WHERE cod=$1 AND ativo=1 AND usos<max", [req.params.cod.toUpperCase()]);
     if (!c) return res.status(404).json({ error: 'Cupom inválido ou esgotado' });
-    res.json({ ok: true, desc: c.desc });
+    res.json({ ok: true, desc: c.desconto });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -350,10 +350,10 @@ app.get('/api/coupons', async (req, res) => {
 
 app.post('/api/coupons', async (req, res) => {
   try {
-    const { adminPass, cod, desc, max } = req.body;
+    const { adminPass, cod, desc: desc_val, max } = req.body;
     if (!await checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
-    await pool.query('INSERT INTO coupons (cod,desc,max) VALUES ($1,$2,$3) ON CONFLICT (cod) DO UPDATE SET desc=$2,max=$3',
-      [cod.toUpperCase(), desc, max||100]);
+    await pool.query('INSERT INTO coupons (cod,desconto,max) VALUES ($1,$2,$3) ON CONFLICT (cod) DO UPDATE SET desc=$2,max=$3',
+      [cod.toUpperCase(), desc_val, max||100]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
