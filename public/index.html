@@ -2251,15 +2251,12 @@ function saveSettings(){
   var pix=document.getElementById('sPix').value;
   var discord=document.getElementById('sDiscord').value;
   var np=document.getElementById('sPass').value;
-  var currentPass=store.settings.pass||'admin123';
 
-  // Salvar localmente
-  store.settings.pix=pix;
-  store.settings.discord=discord;
-  if(np)store.settings.pass=np;
-  save();
+  // Pedir senha atual para confirmar
+  var currentPass=prompt('Digite a senha ATUAL do admin para confirmar:','');
+  if(!currentPass)return;
 
-  // Salvar no servidor
+  // Salvar no servidor primeiro
   fetch('/api/settings',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
@@ -2272,10 +2269,19 @@ function saveSettings(){
   })
   .then(function(r){return r.json();})
   .then(function(data){
-    if(data.ok){toast('✅ Configurações salvas no servidor!');}
-    else{toast('⚠️ Salvo localmente. Erro no servidor: '+(data.error||''));}
+    if(data.ok){
+      // Salvar localmente também
+      store.settings.pix=pix;
+      store.settings.discord=discord;
+      if(np){store.settings.pass=np;}
+      else{store.settings.pass=currentPass;}
+      save();
+      toast('✅ Configurações salvas!');
+    } else {
+      toast('❌ Senha incorreta!');
+    }
   })
-  .catch(function(){toast('⚠️ Salvo localmente. Sem conexão com servidor.');});
+  .catch(function(){toast('❌ Erro de conexão com servidor.');});
 }
 function togglePanel(id){document.getElementById(id).classList.toggle('open');if(!document.getElementById(id).classList.contains('open'))resetGameForm();}
 function resetGameForm(){
