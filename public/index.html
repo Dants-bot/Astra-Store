@@ -2248,11 +2248,34 @@ function loadSettings(){
   document.getElementById('sDiscord').value=store.settings.discord;
 }
 function saveSettings(){
-  store.settings.pix=document.getElementById('sPix').value;
-  store.settings.discord=document.getElementById('sDiscord').value;
-  const np=document.getElementById('sPass').value;
+  var pix=document.getElementById('sPix').value;
+  var discord=document.getElementById('sDiscord').value;
+  var np=document.getElementById('sPass').value;
+  var currentPass=store.settings.pass||'admin123';
+
+  // Salvar localmente
+  store.settings.pix=pix;
+  store.settings.discord=discord;
   if(np)store.settings.pass=np;
-  save();toast('Configurações salvas! ✅');
+  save();
+
+  // Salvar no servidor
+  fetch('/api/settings',{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      adminPass:currentPass,
+      pix:pix,
+      discord:discord,
+      newAdminPass:np||null
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.ok){toast('✅ Configurações salvas no servidor!');}
+    else{toast('⚠️ Salvo localmente. Erro no servidor: '+(data.error||''));}
+  })
+  .catch(function(){toast('⚠️ Salvo localmente. Sem conexão com servidor.');});
 }
 function togglePanel(id){document.getElementById(id).classList.toggle('open');if(!document.getElementById(id).classList.contains('open'))resetGameForm();}
 function resetGameForm(){
