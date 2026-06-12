@@ -1436,12 +1436,12 @@ try {
 } catch(e) { store = null; }
 
 if(!store) {
-  store = { orders:[], clients:[], coupons:[{id:1,cod:'ASTRA10',desc:10,usos:0,max:100,ativo:true}], reviews:{}, tickets:{}, settings:{pix:'fa66843e-2dc8-4451-9ec2-999d4fd77a7c',discord:'https://discord.gg/M4r4wuNk2h',pass:'admin123'} };
+  store = { orders:[], clients:[], coupons:[{id:1,cod:'ASTRA10',desc:10,usos:0,max:100,ativo:true}], reviews:{}, tickets:{}, settings:{pix:'fa66843e-2dc8-4451-9ec2-999d4fd77a7c',discord:'https://discord.gg/M4r4wuNk2h',pass:'G7!qZ#2vL@9pXr$4Nw'} };
 }
 if(!store.orders)  store.orders  = [];
 if(!store.clients) store.clients = [];
 if(!store.coupons) store.coupons = [{id:1,cod:'ASTRA10',desc:10,usos:0,max:100,ativo:true}];
-if(!store.settings) store.settings = {pix:'fa66843e-2dc8-4451-9ec2-999d4fd77a7c',discord:'https://discord.gg/M4r4wuNk2h',pass:'admin123'};
+if(!store.settings) store.settings = {pix:'fa66843e-2dc8-4451-9ec2-999d4fd77a7c',discord:'https://discord.gg/M4r4wuNk2h',pass:'G7!qZ#2vL@9pXr$4Nw'};
 if(!store.reviews) store.reviews = {};
 if(!store.tickets) store.tickets = {};
 
@@ -2554,8 +2554,20 @@ function startRandomNotifs(){
 // INIT
 updateUserUI();updateBadge();renderCartItems();
 
-// Carregar jogos do servidor (Railway) e depois renderizar
+// Carregar configurações e jogos do servidor (Railway) e depois renderizar
 (function(){
+  fetch('/api/settings')
+  .then(function(r){return r.json();})
+  .then(function(s){
+    if(s){
+      if(s.adminPass) store.settings.pass = s.adminPass;
+      if(s.pix) store.settings.pix = s.pix;
+      if(s.discord) store.settings.discord = s.discord;
+      if(s.storeName) store.settings.storeName = s.storeName;
+      save();
+    }
+  }).catch(function(){});
+
   fetch('/api/games')
   .then(function(r){return r.json();})
   .then(function(serverGames){
@@ -2736,4 +2748,4 @@ function diagClear(){
   location.reload();
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0a59155a9e79a69',t:'MTc4MTIzMjgzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
