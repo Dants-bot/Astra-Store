@@ -1537,6 +1537,16 @@ const getDesc=g=>GAME_DESCS[g.nome]||'Um ótimo jogo para PC. Acesso completo vi
 // ════════════════════════════════════════
 //  PAGES
 // ════════════════════════════════════════
+function getDeduplicatedGames(gameList) {
+  const seen = new Set();
+  return (gameList || []).filter(function(g) {
+    const clean = (g.nome || '').trim().toLowerCase();
+    if (seen.has(clean)) return false;
+    seen.add(clean);
+    return true;
+  });
+}
+
 function showPage(p){
   document.getElementById('homePage').style.display=p==='home'?'block':'none';
   document.getElementById('productPage').style.display=p==='product'?'block':'none';
@@ -1612,6 +1622,7 @@ function buildCatTabs(elId,catalog){
 }
 function setCat(cat,elId,catalog){activeCat=cat;buildCatTabs(elId,catalog);if(catalog==='full')renderCatalogFull();else renderCatalog();}
 function renderCatalog(){
+  if (store && store.games) store.games = getDeduplicatedGames(store.games);
   buildSidebarCats();
   let games=activeCat==='Todos'?store.games:activeCat==='💸 Até R$10'?store.games.filter(g=>(g.promo||g.preco)<=10):store.games.filter(g=>(g.cat||g.categoria||'')===activeCat);
   if(sidebarSearch)games=games.filter(g=>g.nome.toLowerCase().includes(sidebarSearch));
@@ -2575,9 +2586,8 @@ updateUserUI();updateBadge();renderCartItems();
   .then(function(r){return r.json();})
   .then(function(serverGames){
     if(Array.isArray(serverGames)&&serverGames.length>0){
-      // Mesclar jogos do servidor com DEFAULT_GAMES
+      // Mesclar jogos do servidor de forma inteligente por NOME para evitar duplicatas de ID
       serverGames.forEach(function(sg){
-        // Mapear campos do banco para o formato do frontend
         var g={
           id:sg.id, nome:sg.nome, preco:sg.preco,
           promo:sg.promo||null, cat:sg.cat||null,
@@ -2585,14 +2595,16 @@ updateUserUI();updateBadge();renderCartItems();
           link:sg.link||null, estoque:sg.estoque||999,
           desc:sg.desc_txt||null
         };
-        var exists=store.games.find(function(x){return x.id===g.id;});
+        var cleanGName = (g.nome || '').trim().toLowerCase();
+        var exists=store.games.find(function(x){ return (x.nome || '').trim().toLowerCase() === cleanGName; });
         if(exists){
-          // Atualizar jogo existente com dados do servidor
           Object.assign(exists,g);
         } else {
           store.games.push(g);
         }
       });
+      store.games = getDeduplicatedGames(store.games);
+      try { save(); } catch(e) {}
     }
   })
   .catch(function(){
@@ -2751,5 +2763,4 @@ function diagClear(){
   location.reload();
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0a5aedb6ee7df22',t:'MTc4MTIzNDA0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
