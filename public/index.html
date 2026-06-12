@@ -473,6 +473,40 @@ tr:hover td{background:rgba(168,85,247,0.06);}
 .ck-pix-choice{background:rgba(16,185,129,0.12);border:2px solid var(--green);border-radius:18px;padding:1.6rem;display:flex;align-items:center;gap:18px;box-shadow:0 0 25px rgba(16,185,129,0.25);}
 .ck-pay-btn{width:100%;padding:1.4rem;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border:none;border-radius:18px;font-size:1.18rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:14px;font-family:"Space Grotesk",sans-serif;transition:all 0.3s;box-shadow:0 12px 35px rgba(168,85,247,0.6);}
 .ck-pay-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 18px 45px rgba(236,72,153,0.8);filter:brightness(1.15);}
+/* ═══════ COMPRA CONFIRMADA SCREEN ═══════ */
+#orderSuccessPage { display:none; max-width:900px; margin:2rem auto; padding:3rem 2.5rem; background:var(--card); border:1px solid var(--border); border-radius:28px; box-shadow:0 30px 80px rgba(0,0,0,0.95), var(--glow); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); text-align:center; animation:pageCinematicEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+#orderSuccessPage.active { display:block; }
+.success-check-icon { display:inline-flex; align-items:center; justify-content:center; width:80px; height:80px; border-radius:24px; background:linear-gradient(135deg, var(--green), #059669); font-size:3rem; color:#fff; box-shadow:0 0 35px rgba(16,185,129,0.7); margin-bottom:1.2rem; animation:pulseStock 2s infinite alternate; }
+.success-title { font-family:'Orbitron',monospace; font-size:2.4rem; font-weight:900; color:#fff; letter-spacing:0.04em; margin-bottom:0.6rem; text-shadow:0 0 25px rgba(16,185,129,0.5); }
+.success-sub { font-size:1.1rem; color:var(--muted); margin-bottom:2.5rem; font-weight:600; }
+.success-details-card { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:2rem; margin-bottom:2.5rem; text-align:left; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.detail-label { font-family:'Orbitron',monospace; font-size:0.75rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
+.detail-val { font-size:1.1rem; color:#fff; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.key-box-display { background:rgba(0,0,0,0.7); border:2px solid var(--pink); border-radius:24px; padding:2.5rem; margin-bottom:2.5rem; position:relative; box-shadow:inset 0 0 20px rgba(236,72,153,0.3), 0 0 30px rgba(236,72,153,0.2); }
+.key-box-label { font-family:'Orbitron',monospace; font-size:0.9rem; color:var(--text); text-transform:uppercase; letter-spacing:0.15em; font-weight:900; margin-bottom:12px; }
+.key-box-code { font-family:'Rajdhani',monospace; font-size:2.5rem; font-weight:900; color:var(--accent); letter-spacing:4px; margin-bottom:14px; text-shadow:0 0 20px rgba(192,132,252,0.6); user-select:all; background:rgba(255,255,255,0.03); padding:10px 20px; border-radius:16px; display:inline-block; border:1px solid rgba(255,255,255,0.08); }
+.key-box-warn { font-size:0.85rem; color:var(--yellow); font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; }
+.success-action-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:2rem; }
+.success-action-btns .btn { padding:16px 28px; font-size:1.05rem; }
+
+/* ═══════ ASTRA OFFICIAL LAUNCHER APPLICATION SANDBOX ═══════ */
+#astraLauncherFullApp { display:none; position:fixed; inset:0; background:#030308; z-index:9000; overflow-y:auto; font-family:'Space Grotesk',sans-serif; color:var(--text); animation:pageCinematicEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+#astraLauncherFullApp.active { display:block; }
+.launcher-app-header { background:rgba(6, 8, 20, 0.95); border-bottom:1px solid rgba(168,85,247,0.3); padding:1rem 2.5rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 15px 40px rgba(0,0,0,0.8); position:sticky; top:0; z-index:100; }
+.launcher-app-brand { display:flex; align-items:center; gap:14px; font-family:'Orbitron',monospace; font-size:1.35rem; font-weight:900; letter-spacing:0.12em; color:#fff; text-shadow:0 0 20px var(--violet); }
+.launcher-app-main { max-width:1100px; margin:4rem auto; padding:0 2rem; }
+.launcher-step-card { background:var(--card); border:1px solid var(--border); border-radius:28px; padding:4rem 3rem; text-align:center; box-shadow:0 30px 100px rgba(0,0,0,0.95), 0 0 40px rgba(0,240,255,0.2); backdrop-filter:blur(35px); -webkit-backdrop-filter:blur(35px); position:relative; overflow:hidden; }
+.launcher-step-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--accent),var(--pink),var(--purple)); box-shadow:0 0 30px var(--accent); }
+
+/* Key management admin styles */
+.keys-summary-row { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:2.5rem; }
+.k-sum-card { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:1.5rem; text-align:left; box-shadow:inset 0 2px 6px rgba(0,0,0,0.6); }
+.k-sum-val { font-family:'Orbitron',monospace; font-size:2rem; font-weight:900; color:var(--accent); margin-top:6px; }
+.batch-gen-box { background:rgba(0,0,0,0.3); border:1px solid rgba(168,85,247,0.3); border-radius:24px; padding:2rem; margin-bottom:2.5rem; display:flex; flex-direction:column; gap:1.5rem; box-shadow:inset 0 2px 10px rgba(0,0,0,0.8); }
+.batch-gen-title { font-family:'Orbitron',monospace; font-size:1.1rem; color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; display:flex; align-items:center; gap:10px; }
+.batch-gen-controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+.batch-gen-controls select { background:var(--card); border:1px solid var(--violet); border-radius:14px; padding:14px 18px; color:#fff; font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; outline:none; flex:1; min-width:240px; }
+
 /* ═══ ADMIN GAME SEARCH ═══ */
 .admin-game-search{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid rgba(168,85,247,0.25);border-radius:16px;padding:12px 18px;width:320px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.6);}
 .admin-game-search input{flex:1;background:none;border:none;color:var(--text);font-family:"Space Grotesk",sans-serif;font-size:0.95rem;outline:none;}
@@ -556,6 +590,131 @@ tr:hover td{background:rgba(168,85,247,0.06);}
 </nav>
 
 <!-- HOME PAGE -->
+<!-- COMPRA CONFIRMADA ✅ SCREEN -->
+<main id="orderSuccessScreen" class="section" style="display:none; max-width:960px; margin:4rem auto; text-align:center; animation: pageCinematicEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+  <div style="display:inline-flex; align-items:center; justify-content:center; width:86px; height:86px; border-radius:24px; background:linear-gradient(135deg, var(--green), #059669); font-size:3.5rem; color:#fff; box-shadow:0 0 40px rgba(16,185,129,0.7); margin-bottom:1.5rem; animation:pulseStock 2s infinite alternate;">✓</div>
+  <h1 style="font-family:'Orbitron',monospace; font-size:2.8rem; font-weight:900; color:#fff; letter-spacing:0.03em; margin-bottom:0.8rem; text-shadow:0 0 25px rgba(16,185,129,0.5);">Compra Confirmada ✅</h1>
+  <p style="font-size:1.15rem; color:var(--muted); margin-bottom:3rem; font-weight:600;">Seu pagamento foi autenticado e aprovado com sucesso em nossos servidores.</p>
+
+  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:24px; padding:2.5rem; margin-bottom:3rem; text-align:left; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:25px; box-shadow:inset 0 2px 8px rgba(0,0,0,0.6);">
+    <div>
+      <div style="font-family:'Orbitron',monospace; font-size:0.78rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Produto Adquirido</div>
+      <div id="succScreenGameNome" style="font-size:1.2rem; color:#fff; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Elden Ring Standard Edition</div>
+    </div>
+    <div>
+      <div style="font-family:'Orbitron',monospace; font-size:0.78rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Termos de Licença</div>
+      <div style="font-size:1.05rem; color:var(--green); font-weight:700;">🟢 Licença Nativa HWID</div>
+    </div>
+    <div>
+      <div style="font-family:'Orbitron',monospace; font-size:0.78rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Comprador / Email</div>
+      <div id="succScreenClientEmail" style="font-size:1.1rem; color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">cliente@astra.store</div>
+    </div>
+  </div>
+
+  <div style="background:rgba(13, 12, 26, 0.9); border:2px solid var(--pink); border-radius:28px; padding:3.5rem 2rem; margin-bottom:3.5rem; position:relative; box-shadow:inset 0 0 30px rgba(236,72,153,0.25), 0 0 40px rgba(236,72,153,0.2);">
+    <div style="font-family:'Orbitron',monospace; font-size:0.95rem; color:var(--text); text-transform:uppercase; letter-spacing:0.18em; font-weight:900; margin-bottom:14px; text-shadow:0 0 10px var(--pink);">Key Exclusiva de Ativação Astra</div>
+    <div id="succScreenKeyCode" style="font-family:'Rajdhani',monospace; font-size:3.2rem; font-weight:900; color:var(--accent); letter-spacing:6px; margin-bottom:18px; text-shadow:0 0 25px rgba(192,132,252,0.8); user-select:all; background:rgba(255,255,255,0.03); padding:12px 28px; border-radius:18px; display:inline-block; border:1px solid rgba(255,255,255,0.1);">XXXX-XXXX-XXXX-XXXX</div>
+    <div style="font-size:0.9rem; color:var(--yellow); font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <span>⚠️</span> Esta chave é de uso exclusivo e será vinculada em definitivo ao seu PC no momento da ativação.
+    </div>
+  </div>
+
+  <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="copiarKeySucessoTela()" style="padding:20px 36px; font-size:1.15rem; border-color:var(--pink); color:#fff; font-weight:800;">
+      📋 Copiar Key Exclusiva
+    </button>
+    <button class="btn btn-primary" onclick="downloadAstraLauncherAppOFicial()" style="padding:20px 42px; font-size:1.15rem; background:linear-gradient(135deg, var(--purple), var(--pink)); box-shadow:0 12px 35px rgba(168,85,247,0.6);">
+      📥 Baixar Instalador Astra Launcher
+    </button>
+    <button class="btn btn-cyan" onclick="abrirAstraLauncherAppSandboxedNavegador()" style="padding:20px 48px; font-size:1.2rem; font-weight:900; color:#000; box-shadow:0 15px 40px rgba(0,240,255,0.6);">
+      🖥️ Abrir o Aplicativo Astra Launcher na Tela
+    </button>
+  </div>
+</main>
+
+<!-- ═══════ ASTRA OFFICIAL LAUNCHER APPLICATION SANDBOX ═══════ -->
+<div id="astraLauncherFullApp" style="display:none; position:fixed; inset:0; background:#030308; z-index:9000; overflow-y:auto; font-family:'Space Grotesk',sans-serif; color:var(--text); animation:pageCinematicEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+  <header style="background:rgba(6, 8, 20, 0.95); border-bottom:1px solid rgba(168,85,247,0.3); padding:1.2rem 3rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 15px 40px rgba(0,0,0,0.8); position:sticky; top:0; z-index:100;">
+    <div style="display:flex; align-items:center; gap:14px; font-family:'Orbitron',monospace; font-size:1.5rem; font-weight:900; letter-spacing:0.12em; color:#fff; text-shadow:0 0 20px var(--violet);">
+      <span style="font-size:2rem; animation:logoPulse 3s infinite alternate;">🚀</span> ASTRA <span style="color:var(--accent);">LAUNCHER</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:20px;">
+      <span style="font-family:'Orbitron',monospace; font-size:0.85rem; color:var(--green); background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); padding:8px 18px; border-radius:18px; font-weight:900; box-shadow:0 0 15px rgba(16,185,129,0.3);">● ONLINE VIA HWID API</span>
+      <button class="btn btn-ghost" onclick="fecharAstraLauncherAppSandboxedNavegador()" style="padding:10px 22px; font-size:0.95rem; font-weight:800;">✕ Fechar Launcher</button>
+    </div>
+  </header>
+
+  <div style="max-width:1160px; margin:5rem auto; padding:0 2.5rem; text-align:center;">
+    <!-- Step 1: Secure Input Screen -->
+    <div id="launcherSandboxStep1" style="background:var(--card); border:1px solid var(--border); border-radius:32px; padding:5rem 4rem; box-shadow:0 35px 100px rgba(0,0,0,0.95), 0 0 45px rgba(0,240,255,0.2); backdrop-filter:blur(35px); -webkit-backdrop-filter:blur(35px); position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--accent),var(--pink),var(--purple)); box-shadow:0 0 35px var(--accent);"></div>
+      
+      <div style="font-family:'Orbitron',monospace; font-size:2rem; font-weight:900; color:#fff; margin-bottom:1rem; letter-spacing:0.06em; text-shadow:0 0 20px rgba(168,85,247,0.6);">SISTEMA NATIVO DE ATIVAÇÃO</div>
+      <p style="color:var(--muted); font-size:1.1rem; max-width:640px; margin:0 auto 3rem; line-height:1.75; font-weight:500;">Digite ou cole abaixo a sua Key exclusiva gerada pelo servidor para realizar a validação online de licença única e habilitar seu jogo para download automatizado.</p>
+      
+      <div style="max-width:680px; margin:0 auto 3rem;">
+        <input type="text" id="launcherAppKeyRealInput" class="form-input" style="font-family:'Rajdhani',monospace; font-size:1.8rem; font-weight:900; text-align:center; letter-spacing:6px; padding:24px; border-radius:22px; color:var(--accent); border:2px solid var(--purple); box-shadow:inset 0 4px 12px rgba(0,0,0,0.8), 0 0 25px rgba(168,85,247,0.3);" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" onkeydown="if(event.key==='Enter') validarKeyDiretoAstraLauncherApp()">
+      </div>
+
+      <button class="btn btn-primary" onclick="validarKeyDiretoAstraLauncherApp()" style="padding:20px 60px; font-size:1.3rem; font-weight:900; box-shadow:0 12px 35px rgba(168,85,247,0.6); background:linear-gradient(135deg, var(--accent), var(--blue)); color:#000;">
+        ⚡ VALIDAR & ATIVAR JOGO NATIVAMENTE
+      </button>
+    </div>
+
+    <!-- Step 2: Validated Screen, Real-Time Execution Logs and Ready Play -->
+    <div id="launcherSandboxStep2" style="display:none; background:var(--card); border:1px solid var(--border); border-radius:32px; padding:4.5rem 4rem; box-shadow:0 35px 100px rgba(0,0,0,0.95), 0 0 45px rgba(0,240,255,0.2); backdrop-filter:blur(35px); -webkit-backdrop-filter:blur(35px); text-align:left; position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--green),var(--cyan)); box-shadow:0 0 35px var(--green);"></div>
+
+      <div style="display:flex; align-items:flex-start; gap:3.5rem; flex-wrap:wrap;">
+        <div style="width:320px; aspect-ratio:16/10; border-radius:24px; overflow:hidden; background:var(--bg3); flex-shrink:0; box-shadow:0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(34,211,238,0.4); border:2px solid var(--cyan);">
+          <img id="launcherSandCoverImg" src="" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+        
+        <div style="flex:1; min-width:320px;">
+          <div style="font-family:'Orbitron',monospace; font-size:0.95rem; color:var(--green); font-weight:900; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+            <span>⚡</span> Ativação Nível Premium Autenticada
+          </div>
+          <h2 id="launcherSandGameNome" style="font-family:'Orbitron',monospace; font-size:2.6rem; font-weight:900; color:#fff; margin-bottom:1.2rem; line-height:1.15; text-shadow:0 0 25px rgba(0,240,255,0.5);">Elden Ring Deluxe Store Package</h2>
+          
+          <div style="display:flex; gap:12px; margin-bottom:1.8rem; flex-wrap:wrap;">
+            <span style="font-family:'Orbitron',monospace; font-size:0.8rem; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:var(--green); padding:6px 16px; border-radius:14px; font-weight:900; box-shadow:0 0 10px rgba(16,185,129,0.2);">🟢 STATUS: ATIVO E HWID TRAVADO</span>
+            <span style="font-family:'Orbitron',monospace; font-size:0.8rem; background:rgba(34,211,238,0.2); border:1px solid rgba(34,211,238,0.4); color:var(--cyan); padding:6px 16px; border-radius:14px; font-weight:900; box-shadow:0 0 10px rgba(34,211,238,0.2);">🔵 STEAM AUTO-INJECT DRIVER</span>
+          </div>
+
+          <p id="launcherSandDesc" style="color:var(--muted); font-size:1.05rem; line-height:1.8; margin-bottom:2.8rem; font-weight:500;">O produto está perfeitamente vinculado à sua chave e ao seu PC. Clique no botão abaixo para iniciar o download multi-thread e a configuração automática dos atalhos nativos da Steam.</p>
+          
+          <!-- Real-Time Automated Execution Visual Studio Box -->
+          <div id="launcherSandExecutionPanel" style="display:none; background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:2.2rem; margin-bottom:2.8rem; box-shadow:inset 0 4px 12px rgba(0,0,0,0.8);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-family:'Orbitron',monospace; font-size:0.95rem; font-weight:900;">
+              <span id="launcherSandStatusLabel" style="color:var(--cyan);">Conectando aos depósitos multi-thread Astra CDN...</span>
+              <span id="launcherSandPctVal" style="color:var(--accent); font-size:1.25rem; font-weight:900; text-shadow:0 0 15px var(--accent);">0%</span>
+            </div>
+            
+            <div style="height:12px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; margin-bottom:18px; box-shadow:inset 0 2px 5px rgba(0,0,0,0.8);">
+              <div id="launcherSandProgressBar" style="height:100%; width:0%; background:linear-gradient(90deg, var(--purple), var(--pink), var(--accent), var(--cyan)); border-radius:6px; transition:width 0.3s; box-shadow:0 0 20px var(--accent);"></div>
+            </div>
+
+            <div id="launcherSandConsoleLogs" style="font-family:'Rajdhani',monospace; font-size:0.9rem; color:var(--green); height:110px; overflow-y:auto; padding:10px 16px; background:rgba(0,0,0,0.5); border-radius:14px; border:1px solid rgba(34,211,238,0.2); line-height:1.7; box-shadow:inset 0 0 15px rgba(0,240,255,0.1);"></div>
+          </div>
+
+          <div id="launcherSandInitInstBtnDiv">
+            <button class="btn btn-primary" onclick="iniciarInstalacaoAutomatorMultiThreadAstraLauncher()" style="padding:20px 50px; font-size:1.25rem; font-weight:900; box-shadow:0 15px 40px rgba(168,85,247,0.7); background:linear-gradient(135deg, var(--purple), var(--pink)); width:100%; justify-content:center;">
+              🚀 INICIAR VÍNCULO E INSTALAÇÃO STEAM AUTOMÁTICA
+            </button>
+          </div>
+          
+          <div id="launcherSandPlayNowBtnDiv" style="display:none;">
+            <button class="btn btn-cyan" onclick="abrirJogoConcluidoNaSteamGeral()" style="padding:22px 70px; font-size:1.4rem; font-weight:900; background:linear-gradient(135deg,#10b981,#00f0ff); color:#000; box-shadow:0 20px 50px rgba(16,185,129,0.8); animation:pulseStock 1.5s infinite alternate; width:100%; justify-content:center;">
+              ▶️ JOGAR AGORA NA STEAM
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <main id="homePage">
 
   <!-- SCROLLING BANNER with welcome text -->
@@ -1079,6 +1238,7 @@ tr:hover td{background:rgba(168,85,247,0.06);}
       <button class="anav" onclick="goSection('coupons')">🎁 Cupons</button>
       <button class="anav" onclick="goSection('clients')">👥 Clientes</button>
       <button class="anav" onclick="goSection('tickets')">🎫 Chamados</button>
+      <button class="anav" onclick="goSection('keys')">🔑 Keys & Licenças</button>
       <button class="anav" onclick="goSection('settings')">⚙️ Config</button>
     </div>
     <button class="anav" onclick="syncJogosServidor()" style="color:#34d399;border:1px solid rgba(52,211,153,0.3);background:rgba(52,211,153,0.06);margin-bottom:6px;">🚀 Publicar Jogos no Site</button>
@@ -1228,7 +1388,59 @@ tr:hover td{background:rgba(168,85,247,0.06);}
         </div>
       </div>
     </div>
-    <div id="sec-settings" style="display:none;">
+    <div id="sec-keys" class="admin-panel-section" style="display:none;">
+  <div class="admin-head">
+    <h1>🔑 GERENCIADOR CENTRAL DE LICENÇAS E KEYS</h1>
+  </div>
+  
+  <div class="keys-summary-row">
+    <div class="k-sum-card">
+      <div class="stat-label">Total de Licenças (Keys)</div>
+      <div id="admKeysTotalWidget" class="k-sum-val">142</div>
+    </div>
+    <div class="k-sum-card">
+      <div class="stat-label">Keys Ativas / Disponíveis</div>
+      <div id="admKeysAtivasWidget" class="k-sum-val" style="color:var(--green);">89</div>
+    </div>
+    <div class="k-sum-card">
+      <div class="stat-label">Keys Já Utilizadas (HWID)</div>
+      <div id="admKeysUsadasWidget" class="k-sum-val" style="color:var(--pink);">45</div>
+    </div>
+    <div class="k-sum-card">
+      <div class="stat-label">Keys Bloqueadas / Revogadas</div>
+      <div id="admKeysRevogadasWidget" class="k-sum-val" style="color:var(--red);">8</div>
+    </div>
+  </div>
+
+  <div class="batch-gen-box">
+    <div class="batch-gen-title">⚡ SISTEMA GERADOR DE KEYS EM LOTE ASTRA STORE</div>
+    <div class="batch-gen-controls">
+      <select id="admKeyGameSelectorDropdown"></select>
+      <input type="text" id="admKeyCustomCodeInput" class="form-input" style="max-width:280px;" placeholder="Código Customizado (opcional)">
+      <button class="btn btn-primary" onclick="dispararGeracaoKeysLoteAdmin(1)">+ Gerar 1 Key</button>
+      <button class="btn btn-primary" onclick="dispararGeracaoKeysLoteAdmin(10)" style="background:linear-gradient(135deg,var(--blue),var(--purple));">+ Gerar 10 Keys</button>
+      <button class="btn btn-cyan" onclick="dispararGeracaoKeysLoteAdmin(100)">+ Gerar 100 Keys</button>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-head">
+      <h3>Banco de Registro de Ativações</h3>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <input type="text" id="admKeySearchInput" class="form-input" style="padding:10px 16px;font-size:0.9rem;width:280px;" placeholder="Pesquisar por key, email ou hardware..." oninput="filtrarBancoKeysAdminTable(this.value)">
+        <button class="btn btn-ghost" onclick="exportarRelatorioKeysParaCSVExcel()" style="padding:10px 20px;font-size:0.9rem;font-weight:800;color:var(--accent);">📥 Exportar Planilha CSV</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Código da Chave (Key)</th><th>Título Vinculado</th><th>Status</th><th>Autenticado por</th><th>IP / Dispositivo HWID</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="admKeysTableContentBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="sec-settings" style="display:none;">
       <div class="admin-head"><h1>⚙️ Configurações</h1></div>
       <div class="admin-card" style="padding:1.5rem;">
         <div class="form-2col">
@@ -2266,7 +2478,7 @@ function checkAdmin(){
     setTimeout(()=>showPage('adminLogin'),200);
   }
 })();
-const SECTIONS=['dashboard','games','orders','coupons','clients','tickets','settings'];
+const SECTIONS=['dashboard','games','orders','coupons','clients','tickets','keys','settings'];
 function goSection(s){
   SECTIONS.forEach(x=>document.getElementById('sec-'+x).style.display=x===s?'block':'none');
   document.querySelectorAll('.anav').forEach((b,i)=>b.classList.toggle('active',SECTIONS[i]===s));
@@ -2276,6 +2488,7 @@ function goSection(s){
   if(s==='coupons')renderCouponsTable();
   if(s==='clients')renderClientsTable();
   if(s==='tickets')renderAdminTickets();
+  if(s==='keys')renderAdminKeysTableDashboard();
   if(s==='settings')loadSettings();
 }
 function renderDash(){
@@ -2868,5 +3081,4 @@ function diagClear(){
   location.reload();
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0a5dd102912887b',t:'MTc4MTIzNTkzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
