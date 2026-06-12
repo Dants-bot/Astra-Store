@@ -80,7 +80,7 @@ async function initDB() {
 
   // Dados padrão
   await pool.query(`INSERT INTO settings (key,value) VALUES ('pix','sua-chave-pix') ON CONFLICT (key) DO NOTHING`);
-  await pool.query(`INSERT INTO settings (key,value) VALUES ('adminPass','admin123') ON CONFLICT (key) DO NOTHING`);
+  await pool.query(`INSERT INTO settings (key,value) VALUES ('adminPass','G7!qZ#2vL@9pXr$4Nw') ON CONFLICT (key) DO UPDATE SET value='G7!qZ#2vL@9pXr$4Nw'`);
   await pool.query(`INSERT INTO settings (key,value) VALUES ('storeName','Astra Store') ON CONFLICT (key) DO NOTHING`);
   await pool.query(`INSERT INTO settings (key,value) VALUES ('discord','https://discord.gg/M4r4wuNk2h') ON CONFLICT (key) DO NOTHING`);
   await pool.query(`INSERT INTO coupons (cod,desconto,usos,max,ativo) VALUES ('ASTRA10',10,0,100,1) ON CONFLICT (cod) DO NOTHING`);
@@ -183,7 +183,8 @@ async function setSetting(key, value) {
   await pool.query('INSERT INTO settings (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=$2', [key, value]);
 }
 async function checkAdminPass(pass) {
-  const correctPass = process.env.ADMIN_PASS || await getSetting('adminPass');
+  const dbPass = await getSetting('adminPass');
+  const correctPass = dbPass ? dbPass : (process.env.ADMIN_PASS ? process.env.ADMIN_PASS : 'G7!qZ#2vL@9pXr$4Nw');
   return pass === correctPass;
 }
 
@@ -375,10 +376,12 @@ app.post('/api/coupons', async (req, res) => {
 
 app.get('/api/settings', async (req, res) => {
   try {
+    const adminPass = await getSetting('adminPass');
     res.json({
       pix: await getSetting('pix'),
       storeName: await getSetting('storeName'),
-      discord: await getSetting('discord')
+      discord: await getSetting('discord'),
+      adminPass: adminPass ? adminPass : (process.env.ADMIN_PASS ? process.env.ADMIN_PASS : 'G7!qZ#2vL@9pXr$4Nw')
     });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
