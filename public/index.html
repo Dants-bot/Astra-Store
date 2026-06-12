@@ -541,6 +541,7 @@ tr:hover td{background:rgba(168,85,247,0.06);}
     <div id="searchResults"></div>
   </div>
   <div class="nav-actions">
+    <button class="btn btn-cyan" onclick="openLauncherAppModal('Catálogo Digital Astra Store')" style="font-size:0.8rem;box-shadow:0 0 20px rgba(0,240,255,0.4);">🚀 Astra Automator App</button>
     <a href="https://discord.gg/M4r4wuNk2h" target="_blank" class="btn btn-discord" style="font-size:0.8rem;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.081.118 18.105.136 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
       Discord
@@ -971,6 +972,62 @@ tr:hover td{background:rgba(168,85,247,0.06);}
     <div style="display:flex;gap:8px;margin-top:1.25rem;">
       <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="openTicketModal();closeModal('policyModal')">Abrir Chamado</button>
       <a href="https://discord.gg/M4r4wuNk2h" target="_blank" class="btn btn-discord" style="flex:1;justify-content:center;">Discord</a>
+    </div>
+  </div>
+</div>
+
+<!-- ASTRA LAUNCHER & AUTOMATOR MODAL -->
+<div class="overlay" id="launcherAppModal">
+  <div class="modal" style="max-width:560px;max-height:92vh;overflow-y:auto;background:rgba(10, 10, 22, 0.96);border:1px solid var(--accent);box-shadow:0 30px 100px rgba(0,0,0,0.95), 0 0 35px rgba(0,240,255,0.25);">
+    <button class="modal-close" onclick="closeModal('launcherAppModal')">✕</button>
+    <div style="text-align:center;margin-bottom:1.4rem;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg, var(--accent), var(--purple));color:#000;font-size:2.4rem;font-weight:900;box-shadow:0 0 30px rgba(0,240,255,0.6);margin-bottom:0.8rem;animation:logoPulse 3s infinite alternate;">🚀</div>
+      <h2 style="font-size:1.7rem;">ASTRA <span style="color:var(--accent);">LAUNCHER</span></h2>
+      <p style="color:var(--cyan);font-weight:800;font-size:0.88rem;text-transform:uppercase;letter-spacing:0.15em;font-family:'Orbitron',monospace;">Distribuição Automatizada de Jogos</p>
+    </div>
+    
+    <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:1.6rem;margin-bottom:1.8rem;text-align:center;box-shadow:inset 0 4px 12px rgba(0,0,0,0.8);">
+      <div style="font-size:0.82rem;color:var(--text);text-transform:uppercase;letter-spacing:0.1em;font-weight:900;font-family:'Orbitron',monospace;margin-bottom:8px;">Sua Activation Key (Exclusiva)</div>
+      <div id="launcherSecureKey" style="font-family:'Rajdhani',monospace;font-size:1.35rem;font-weight:900;color:var(--pink);background:rgba(255,255,255,0.03);padding:12px;border-radius:14px;border:1px solid rgba(236,72,153,0.4);letter-spacing:3px;user-select:all;box-shadow:inset 0 2px 4px rgba(0,0,0,0.5), 0 0 15px rgba(236,72,153,0.2);">G7!qZ#2vL@9pXr$4Nw</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:8px;font-weight:600;">⚠️ Licença vinculada via HWID (Hardware ID) — Intransferível</div>
+    </div>
+
+    <div style="margin-bottom:2rem;text-align:left;">
+      <h4 style="font-family:'Orbitron',monospace;font-size:0.88rem;color:#fff;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;display:flex;align-items:center;gap:10px;">
+        <span style="color:var(--green);font-size:1.2rem;">⚙️</span> Fluxo de Instalação Automatizado
+      </h4>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:0.9rem;color:var(--muted);line-height:1.6;font-weight:500;">
+        <div style="background:rgba(255,255,255,0.02);padding:12px 16px;border-radius:16px;border:1px solid rgba(255,255,255,0.05);display:flex;gap:14px;align-items:center;transition:all 0.2s;">
+          <span style="font-family:'Orbitron',monospace;font-weight:900;color:var(--accent);font-size:1.2rem;width:24px;text-align:center;">1</span>
+          <div style="flex:1;">Baixe o pacote original zipado do jogo fornecido na sua entrega.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.02);padding:12px 16px;border-radius:16px;border:1px solid rgba(255,255,255,0.05);display:flex;gap:14px;align-items:center;transition:all 0.2s;">
+          <span style="font-family:'Orbitron',monospace;font-weight:900;color:var(--accent);font-size:1.2rem;width:24px;text-align:center;">2</span>
+          <div style="flex:1;">Baixe nosso aplicativo ativador oficial <strong>Astra Automator (.bat)</strong> abaixo.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.02);padding:12px 16px;border-radius:16px;border:1px solid rgba(255,255,255,0.05);display:flex;gap:14px;align-items:center;transition:all 0.2s;">
+          <span style="font-family:'Orbitron',monospace;font-weight:900;color:var(--accent);font-size:1.2rem;width:24px;text-align:center;">3</span>
+          <div style="flex:1;">Execute na pasta do download! O sistema detecta sua Steam via registro nativo, faz o binding, injeta o título na biblioteca e reabre a Steam pronta para jogar.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <button class="btn btn-primary" onclick="downloadAstraAutomator()" style="width:100%;justify-content:center;padding:18px;font-size:1.1rem;box-shadow:0 12px 35px rgba(168,85,247,0.6);">
+        📥 Baixar Astra Automator (.bat Nativo)
+      </button>
+      <button class="btn btn-ghost" onclick="simularInstalacaoLauncher()" style="width:100%;justify-content:center;padding:16px;border-color:var(--cyan);color:var(--cyan);font-weight:800;font-size:0.95rem;">
+        🖥️ Simular Ativação do Automator ao Vivo
+      </button>
+    </div>
+
+    <!-- Live interactive hacker terminal simulator screen -->
+    <div id="launcherSimBox" style="display:none;margin-top:1.8rem;background:#030308;border:1px solid var(--accent);border-radius:20px;padding:1.6rem;font-family:'Rajdhani',monospace;font-size:0.9rem;color:var(--green);line-height:1.75;text-align:left;box-shadow:inset 0 0 20px rgba(0,240,255,0.2);">
+      <div style="color:var(--accent);font-weight:900;margin-bottom:8px;font-family:'Orbitron',monospace;font-size:0.85rem;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;">
+        <span>Terminal Astra Automator v4.0</span>
+        <span style="color:var(--green);font-size:0.75rem;">● RUNNING</span>
+      </div>
+      <div id="simTerminalContent" style="white-space:pre-wrap;"></div>
     </div>
   </div>
 </div>
@@ -1885,6 +1942,53 @@ function updateCkTermsUI(){
   if(cb&&cb.checked){sl.style.background='linear-gradient(135deg,#2563eb,#7c3aed)';kn.style.transform='translateX(20px)';}
   else{sl.style.background='#333';kn.style.transform='';}
 }
+let currentAutomatorGame = 'Astra Game Catalog';
+
+function openLauncherAppModal(gameName) {
+  currentAutomatorGame = gameName || 'Astra Plataforma Premium';
+  const dbKey = store.settings.pass || 'G7!qZ#2vL@9pXr$4Nw';
+  const skEl = document.getElementById('launcherSecureKey');
+  if (skEl) skEl.textContent = dbKey;
+  const box = document.getElementById('launcherSimBox');
+  if (box) box.style.display = 'none';
+  openModal('launcherAppModal');
+}
+
+function downloadAstraAutomator() {
+  const key = store.settings.pass || 'G7!qZ#2vL@9pXr$4Nw';
+  window.location.href = '/api/automator?game=' + encodeURIComponent(currentAutomatorGame) + '&key=' + encodeURIComponent(key);
+  toast('🚀 Instalador oficial nativo gerado e baixado!');
+}
+
+function simularInstalacaoLauncher() {
+  const box = document.getElementById('launcherSimBox');
+  const term = document.getElementById('simTerminalContent');
+  if (!box || !term) return;
+  box.style.display = 'block';
+  term.innerHTML = '<div style="color:#aaa;">Estabelecendo link seguro com o driver local do Windows...</div>';
+  
+  const key = store.settings.pass || 'G7!qZ#2vL@9pXr$4Nw';
+  const steps = [
+    '<div style="color:var(--cyan);margin-top:6px;">[1/5] Lendo e validando chave de ativação única HWID (' + key + ')...<br>     ✅ Autenticação de licença Astra confirmada com sucesso!</div>',
+    '<div style="color:var(--muted);margin-top:6px;">[2/5] Inspecionando chaves do Registro do Windows (HKCU\\Software\\Valve\\Steam)...<br>     Diretório oficial localizado: C:\\Program Files (x86)\\Steam\\</div>',
+    '<div style="color:var(--yellow);margin-top:6px;">[3/5] Interrompendo instâncias ativas da Steam em segundo plano (Stop-Process steam)...<br>     Steam encerrada com segurança.</div>',
+    '<div style="color:var(--pink);margin-top:6px;">[4/5] Descompactando depósitos do título (' + currentAutomatorGame + ') diretamente na pasta SteamPath...<br>     Sincronizando manifestos e limpando arquivos de depotcache residuais...</div>',
+    '<div style="color:var(--green);font-weight:900;font-size:1.1rem;margin-top:12px;text-shadow:0 0 10px rgba(16,185,129,0.5);">🚀 [SUCESSO] Jogo ativado nativamente na biblioteca! Save na Nuvem habilitado! Reabrindo a Steam pronta para jogar...</div>'
+  ];
+  
+  let i = 0;
+  const timer = setInterval(() => {
+    if(i < steps.length) {
+      term.innerHTML += steps[i];
+      box.scrollTop = box.scrollHeight;
+      i++;
+    } else {
+      clearInterval(timer);
+      toast('🎮 Teste de automação de ativação finalizado!');
+    }
+  }, 950);
+}
+
 function finalizarPagamento(){
   if(!SEC.rateLimit('checkout',3,60000)){toast('⚠️ Muitas tentativas. Aguarde.');return;}
   const nome=SEC.clean((document.getElementById('ckNome').value||'').trim(),50);
@@ -2036,6 +2140,7 @@ function openPurchasesModal(){
         <div class="purchase-item-info">
           <div class="purchase-item-name">${o.jNome}</div>
           <div class="purchase-item-meta">Comprado em ${o.data} · ${fmt(o.valor)}</div>
+          ${o.status!=='pendente'?`<button class="tb" onclick="openLauncherAppModal('${o.jNome.replace(/\'/g,"\\'")}')" style="margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--purple));color:#000;font-weight:900;padding:6px 16px;border-radius:12px;box-shadow:0 0 15px rgba(0,240,255,0.3);">🚀 Ativar no Astra Launcher Oficial</button>`:''}
         </div>
         <span class="purchase-item-status st-${o.status}">${o.status}</span>
       </div>`;
