@@ -1946,7 +1946,7 @@ let currentAutomatorGame = 'Astra Game Catalog';
 
 function openLauncherAppModal(gameName) {
   currentAutomatorGame = gameName || 'Astra Plataforma Premium';
-  const dbKey = store.settings.pass || 'G7!qZ#2vL@9pXr$4Nw';
+  const dbKey = 'ASTRA-GAME-KEY-' + (Math.floor(Math.random()*80000)+10000);
   const skEl = document.getElementById('launcherSecureKey');
   if (skEl) skEl.textContent = dbKey;
   const box = document.getElementById('launcherSimBox');
@@ -1955,7 +1955,7 @@ function openLauncherAppModal(gameName) {
 }
 
 function downloadAstraAutomator() {
-  const key = store.settings.pass || 'G7!qZ#2vL@9pXr$4Nw';
+  const key = document.getElementById('launcherSecureKey')?.textContent || 'ASTRA-GAME-PREMIUM-KEY-9942';
   window.location.href = '/api/automator?game=' + encodeURIComponent(currentAutomatorGame) + '&key=' + encodeURIComponent(key);
   toast('🚀 Instalador oficial nativo gerado e baixado!');
 }
@@ -1967,7 +1967,7 @@ function simularInstalacaoLauncher() {
   box.style.display = 'block';
   term.innerHTML = '<div style="color:#aaa;">Estabelecendo link seguro com o driver local do Windows...</div>';
   
-  const key = store.settings.pass || 'G7!qZ#2vL@9pXr$4Nw';
+  const key = document.getElementById('launcherSecureKey')?.textContent || 'ASTRA-GAME-PREMIUM-KEY-9942';
   const steps = [
     '<div style="color:var(--cyan);margin-top:6px;">[1/5] Lendo e validando chave de ativação única HWID (' + key + ')...<br>     ✅ Autenticação de licença Astra confirmada com sucesso!</div>',
     '<div style="color:var(--muted);margin-top:6px;">[2/5] Inspecionando chaves do Registro do Windows (HKCU\\Software\\Valve\\Steam)...<br>     Diretório oficial localizado: C:\\Program Files (x86)\\Steam\\</div>',
@@ -2868,4 +2868,5 @@ function diagClear(){
   location.reload();
 }
 </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0a5dd102912887b',t:'MTc4MTIzNTkzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
