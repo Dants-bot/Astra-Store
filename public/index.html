@@ -607,7 +607,7 @@ tr:hover td{background:rgba(168,85,247,0.06);}
     </div>
     <div>
       <div style="font-family:'Orbitron',monospace; font-size:0.78rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Comprador / Email</div>
-      <div id="succScreenClientEmail" style="font-size:1.1rem; color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">cliente@astra.store</div>
+      <div id="succScreenClientEmail" style="font-size:1.1rem; color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="85e6e9ece0ebf1e0c5e4f6f1f7e4abf6f1eaf7e0">[email&#160;protected]</a></div>
     </div>
   </div>
 
@@ -1457,7 +1457,7 @@ tr:hover td{background:rgba(168,85,247,0.06);}
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ════════════════════════════════════════
 //  GAME DATA
 // ════════════════════════════════════════
@@ -2922,6 +2922,7 @@ updateUserUI();updateBadge();renderCartItems();
         }
       });
       store.games = getDeduplicatedGames(store.games);
+      try { popularDropdownJogosLoteAdmin(); } catch(e) {}
       try { save(); } catch(e) {}
     }
   })
@@ -2934,6 +2935,7 @@ updateUserUI();updateBadge();renderCartItems();
     buildBanner();
     renderPromoDia();
     startRandomNotifs();
+    try { popularDropdownJogosLoteAdmin(); } catch(e) {}
     showPage('home');
     document.body.style.visibility='visible';
   });
