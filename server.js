@@ -699,7 +699,7 @@ echo !ESC![38;2;16;185;129m[SUCESSO] Limpeza de desinstalacao concluida perfeita
 echo Reabrindo a Steam...
 start "" "%steamExe:"=%"
 goto :eof
-\`;
+`;
     
     res.setHeader('Content-disposition', 'attachment; filename=AstraAutomator.bat');
     res.setHeader('Content-type', 'application/x-msdos-program');
