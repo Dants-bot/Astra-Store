@@ -194,8 +194,15 @@ async function checkAdminPass(pass) {
 
 app.get('/api/games', async (req, res) => {
   try {
-    const games = await q('SELECT * FROM games WHERE ativo=1 ORDER BY id');
-    res.json(games);
+    const rawGames = await q('SELECT * FROM games WHERE ativo=1 ORDER BY id');
+    const seenNames = new Set();
+    const uniqueGames = rawGames.filter(g => {
+      const cleanName = (g.nome || '').trim().toLowerCase();
+      if (seenNames.has(cleanName)) return false;
+      seenNames.add(cleanName);
+      return true;
+    });
+    res.json(uniqueGames);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
