@@ -76,7 +76,25 @@ async function initDB() {
       key   TEXT PRIMARY KEY,
       value TEXT
     );
+    CREATE TABLE IF NOT EXISTS game_keys (
+      id          SERIAL PRIMARY KEY,
+      cod         TEXT    NOT NULL UNIQUE,
+      game_id     INTEGER NOT NULL,
+      game_nome   TEXT,
+      status      TEXT    DEFAULT 'ativa', -- 'ativa', 'usada', 'bloqueada'
+      criado_em   TEXT    DEFAULT NOW()::TEXT,
+      ativado_em  TEXT,
+      user_email  TEXT,
+      ip          TEXT,
+      dispositivo TEXT,
+      order_token TEXT
+    );
   `);
+  
+  await pool.query("INSERT INTO game_keys (cod, game_id, game_nome) VALUES ('ASTRA-CYBER-9942', 11, 'Cyberpunk 2077') ON CONFLICT (cod) DO NOTHING");
+  await pool.query("INSERT INTO game_keys (cod, game_id, game_nome) VALUES ('ASTRA-ELDEN-8812', 1, 'Elden Ring') ON CONFLICT (cod) DO NOTHING");
+  await pool.query("INSERT INTO game_keys (cod, game_id, game_nome) VALUES ('ASTRA-GOW-7731', 21, 'God of War 2018') ON CONFLICT (cod) DO NOTHING");
+
 
   // Dados padrão
   await pool.query(`INSERT INTO settings (key,value) VALUES ('pix','sua-chave-pix') ON CONFLICT (key) DO NOTHING`);
@@ -296,7 +314,22 @@ app.post('/api/orders', async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,'pendente',$7) RETURNING id`,
       [user_id||null,c_nome||'',c_email||'',j_nome,JSON.stringify(itens),valor,token]
     );
-    res.json({ ok: true, id: result.id, token });
+    
+    // Gerar ou associar keys ativas exclusivas para este pedido
+    const generatedKeys = [];
+    for (const item of (Array.isArray(itens) ? itens : [])) {
+      let gk = await q1(`SELECT * FROM game_keys WHERE game_id=$1 AND status='ativa' AND order_token IS NULL LIMIT 1`, [item.id]);
+      if (gk) {
+        await pool.query(`UPDATE game_keys SET order_token=$1 WHERE id=$2`, [token, gk.id]);
+        generatedKeys.push(gk);
+      } else {
+        const cod = 'ASTRA-' + Math.random().toString(36).substring(2,6).toUpperCase() + '-' + Math.random().toString(36).substring(2,6).toUpperCase() + '-' + Date.now().toString().substring(9,13);
+        const resultGk = await q1(`INSERT INTO game_keys (cod, game_id, game_nome, order_token) VALUES ($1, $2, $3, $4) RETURNING *`, [cod, item.id, item.nome, token]);
+        generatedKeys.push(resultGk);
+      }
+    }
+    
+    res.json({ ok: true, id: result.id, token, keys: generatedKeys });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -511,6 +544,95 @@ app.post('/api/webhook', async (req, res) => {
 // ════════════════════════════════════════════════════════════════════════════
 //  LAUNCHER & AUTOMATOR NATIVO (WINDOWS BATCH INSTALLER DINAÂMICO)
 // ════════════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════════════
+//  ROTA DE KEYS E LICENCAS (ADMIN DASHBOARD)
+// ════════════════════════════════════════════════════════════════════════════
+
+app.get('/api/game-keys', async (req, res) => {
+  try {
+    const { adminPass } = req.query;
+    if (!await checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
+    const keysRows = await q('SELECT * FROM game_keys ORDER BY id DESC');
+    res.json(keysRows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/game-keys/batch', async (req, res) => {
+  try {
+    const { adminPass, gameId, gameNome, quantidade, codCustom } = req.body;
+    if (!await checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
+    if (!gameId) return res.status(400).json({ error: 'Selecione um jogo obrigatorio.' });
+    const count = parseInt(quantidade) || 1;
+    const insertedKeys = [];
+    
+    if (codCustom && count === 1) {
+      const g = await q1(`INSERT INTO game_keys (cod, game_id, game_nome) VALUES ($1, $2, $3) RETURNING *`, [codCustom.trim().toUpperCase(), gameId, gameNome || 'Jogo Astra']);
+      insertedKeys.push(g);
+    } else {
+      for (let i = 0; i < count; i++) {
+        const cod = 'ASTRA-' + Math.random().toString(36).substring(2,6).toUpperCase() + '-' + Math.random().toString(36).substring(2,6).toUpperCase() + '-' + (Math.floor(Math.random()*8900)+1000);
+        const g = await q1(`INSERT INTO game_keys (cod, game_id, game_nome) VALUES ($1, $2, $3) RETURNING *`, [cod, gameId, gameNome || 'Jogo Astra']);
+        insertedKeys.push(g);
+      }
+    }
+    res.json({ ok: true, generated: insertedKeys });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/game-keys/:id/status', async (req, res) => {
+  try {
+    const { adminPass, status } = req.body;
+    if (!await checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
+    await pool.query('UPDATE game_keys SET status=$1 WHERE id=$2', [status, req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/game-keys/:id', async (req, res) => {
+  try {
+    const { adminPass } = req.body;
+    if (!await checkAdminPass(adminPass)) return res.status(401).json({ error: 'Senha incorreta' });
+    await pool.query('DELETE FROM game_keys WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+//  ROTA DE VALIDACAO E ATIVACAO NATIVA (ASTRA LAUNCHER APP)
+// ════════════════════════════════════════════════════════════════════════════
+
+app.post('/api/launcher/activate', async (req, res) => {
+  try {
+    const { cod, user_email, dispositivo } = req.body;
+    if (!cod) return res.status(400).json({ error: 'Insira sua Activation Key (Chave de Ativacao).' });
+    
+    const keyRow = await q1('SELECT * FROM game_keys WHERE cod=$1', [cod.trim().toUpperCase()]);
+    if (!keyRow) return res.status(404).json({ error: 'Key incorreta, inexistente ou nao localizada na Astra Store.' });
+    if (keyRow.status === 'bloqueada') return res.status(403).json({ error: 'Esta Key foi revogada pela seguranca ou está bloqueada.' });
+    if (keyRow.status === 'usada') return res.status(409).json({ error: 'Esta Key ja foi autenticada e ativada anteriormente em outro computador.' });
+    
+    // Key ativa e valida! Buscar dados completos do titulo
+    const gameRow = await q1('SELECT * FROM games WHERE id=$1', [keyRow.game_id]);
+    const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
+    
+    const updatedKey = await q1(
+      `UPDATE game_keys SET status='usada', ativado_em=NOW()::TEXT, user_email=$1, dispositivo=$2, ip=$3 WHERE cod=$4 RETURNING *`,
+      [user_email || 'cliente@astra.store', dispositivo || 'Astra Desktop Windows (x64)', ip, keyRow.cod]
+    );
+    
+    res.json({ ok: true, key: updatedKey, game: gameRow || { id: keyRow.game_id, nome: keyRow.game_nome, img: null, link: null } });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/orders/success/:token', async (req, res) => {
+  try {
+    const orderRow = await q1('SELECT * FROM orders WHERE token=$1', [req.params.token]);
+    if (!orderRow) return res.status(404).json({ error: 'Pedido nao localizado no sistema.' });
+    const keyRows = await q('SELECT * FROM game_keys WHERE order_token=$1', [req.params.token]);
+    res.json({ ok: true, order: orderRow, keys: keyRows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 app.get('/api/automator', async (req, res) => {
   try {
