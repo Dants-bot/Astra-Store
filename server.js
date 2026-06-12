@@ -585,7 +585,7 @@ for /L %%i in (0,1,7) do (
 echo.
 echo !ESC![38;2;0;240;255m================================================================================!ESC![0m
 echo   NOME DO JOGO : ${gameTitle}
-echo   CHAVE DE ATIVACAO: ${key || 'G7!qZ#2vL@9pXr$4Nw'}
+echo   CHAVE DE ATIVACAO: ${key || 'ASTRA-GAME-PREMIUM-KEY-9942'}
 echo   CAMINHO STEAM: %steamDir%
 echo !ESC![38;2;0;240;255m================================================================================!ESC![0m
 echo.
@@ -659,7 +659,10 @@ echo [4/4] Processo concluido com sucesso! Reabrindo a Steam...
 start "" "%steamExe:"=%"
 echo.
 echo !ESC![38;2;16;185;129m[SUCESSO] O jogo ${gameTitle} foi instalado e sincronizado na sua Steam com exito!!ESC![0m
-goto :eof
+echo.
+echo Pressione qualquer tecla para voltar ao menu Astra Store...
+pause >nul
+goto Menu
 
 :: ================================================================================
 :: DESINSTALAR JOGOS E LIMPAR PLUGINS STEAM
