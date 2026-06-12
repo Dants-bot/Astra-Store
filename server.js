@@ -637,14 +637,16 @@ app.get('/api/orders/success/:token', async (req, res) => {
 app.get('/api/automator', async (req, res) => {
   try {
     const { key, game } = req.query;
-    const gameTitle = game ? game : 'Astra Game';
+    const gameTitle = game ? game : 'Astra Produto Oficial';
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const backendUrl = protocol + '://' + host;
     
-    // Constrói um instalador Windows nativo premium com cores, logos e automação de Steam
     const batScript = `@echo off
 setlocal enabledelayedexpansion
 chcp 65001 >nul
-mode con: cols=120 lines=40
-title Astra Launcher Automator — Ativação Oficial de Jogos
+mode con: cols=120 lines=42
+title Astra Launcher Oficial — Plataforma Nativa de Vínculo Steam
 
 :: Identificar arquivo .zip automaticamente no diretorio
 set "zipFile="
@@ -660,7 +662,7 @@ for /f "tokens=3*" %%A in ('reg query "HKCU\\Software\\Valve\\Steam" /v SteamExe
 )
 if not defined steamExe (
     echo [ERRO] Nao foi possivel localizar o caminho da Steam no seu Registro do Windows.
-    echo Por favor, abra a Steam manualmente pelo menos uma vez ou instale a Steam.
+    echo Por favor, abra a Steam manualmente pelo menos uma vez ou instale a Steam no seu PC.
     pause
     exit /b
 )
@@ -682,7 +684,7 @@ for /L %%j in (0,1,98) do (
     set "esc[%%j]=!ESC![38;2;!corR!;!corG!;!corB!m"
 )
 
-:: Banner Oficial Astra Store Premium
+:: Banner Oficial Astra Launcher Desktop Premium
 set "lines[0]=                                                                        "
 set "lines[1]=                                                                        "
 set "lines[2]=   █████  ███████ ████████ ██████   █████                              "
@@ -706,33 +708,55 @@ for /L %%i in (0,1,7) do (
 )
 echo.
 echo !ESC![38;2;0;240;255m================================================================================!ESC![0m
-echo   NOME DO JOGO : ${gameTitle}
-echo   CHAVE DE ATIVACAO: ${key || 'ASTRA-GAME-PREMIUM-KEY-9942'}
-echo   CAMINHO STEAM: %steamDir%
+echo   PLATAFORMA ASTRA LAUNCHER OFICIAL — ATIVAÇÃO E VÍNCULO DE JOGOS
+echo   CAMINHO LOCAL DA SUA STEAM: %steamDir%
 echo !ESC![38;2;0;240;255m================================================================================!ESC![0m
 echo.
-echo   1. Instalar Jogo na Steam Automaticamente
-echo   2. Desinstalar Jogos (Limpar titulos ativados e depotcache da Steam)
-echo   3. Sair do Instalador
-echo.
-set /p option=!ESC![38;2;236;72;153mEscolha uma opcao para iniciar a automacao: !ESC![0m
 
-if "%option%"=="1" (
-    call :InstalarJogos
-    pause
-    goto Menu
-) else if "%option%"=="2" (
-    call :DesinstalarArquivos
-    pause
-    goto Menu
-) else if "%option%"=="3" (
-    exit /b
+set "userKey=${key || ''}"
+if not "%userKey%"=="" (
+    echo Chave pré-configurada para este download: !ESC![38;2;236;72;153m%userKey%!ESC![0m
 ) else (
-    echo [AVISO] Opcao invalida!
-    timeout /t 1 >nul
+    echo Por favor, digite ou cole abaixo a sua Key de Ativacao exclusiva recebida na compra:
+    echo (Exemplo: ASTRA-CYBER-9942, ASTRA-ELDEN-8812, etc.)
+    echo.
+    set /p userKey=!ESC![38;2;236;72;153mInsira sua Key aqui: !ESC![0m
+)
+
+if "%userKey%"=="" (
+    echo.
+    echo !ESC![38;2;239;68;68m[ERRO] Nenhuma chave de ativação foi inserida. Operação cancelada.!ESC![0m
+    pause
     goto Menu
 )
-goto :eof
+
+echo.
+echo ⏳ Validadando e autenticando sua Key nos Servidores Astra Store (%backendUrl%)...
+:: Faz a requisição em tempo real via PowerShell para validar a chave nativamente
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$r=Invoke-WebRequest -Uri '%backendUrl%/api/launcher/activate' -Method POST -Body (@{cod='%userKey%',dispositivo='Astra Desktop Client (x64)'}|ConvertTo-Json) -ContentType 'application/json' -ErrorAction SilentlyContinue; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 }"
+
+if errorlevel 1 (
+    echo.
+    echo !ESC![38;2;239;68;68m[❌ ERRO DE ATIVAÇÃO] A Key "%userKey%" é INVÁLIDA, INEXISTENTE ou JÁ FOI ATIVADA em outro HWID!!ESC![0m
+    echo Por favor, verifique se você digitou a chave corretamente ou contate nossa equipe no Discord.
+    echo.
+    pause
+    goto Menu
+)
+
+echo.
+echo !ESC![38;2;16;185;129m[✅ SUCESSO] Key validada com perfeição! Hardware autenticado.!ESC![0m
+echo.
+echo Escolha o que deseja fazer com seus depósitos de jogo:
+echo   1. Baixar, Extrair e Adicionar Jogo Automaticamente na Steam
+echo   2. Desinstalar Jogos (Limpar manifestos e depotcache da Steam)
+echo   3. Sair do Launcher
+echo.
+set /p execOpt=!ESC![38;2;0;240;255mEscolha uma opcao de execucao: !ESC![0m
+
+if "%execOpt%"=="1" goto InstalarJogos
+if "%execOpt%"=="2" goto DesinstalarArquivos
+exit /b
 
 :: ================================================================================
 :: INSTALAR JOGOS NA STEAM AUTOMATICAMENTE
@@ -740,15 +764,15 @@ goto :eof
 :InstalarJogos
 if not defined zipFile (
     echo.
-    echo !ESC![38;2;239;68;68m[ERRO] Nenhum arquivo .zip do jogo foi encontrado na pasta atual.!ESC![0m
-    echo Por favor, coloque este script AstraAutomator.bat na mesma pasta onde voce baixou o arquivo .zip do jogo.
+    echo !ESC![38;2;239;68;68m[ERRO] Nenhum arquivo de jogo .zip foi encontrado nesta pasta.!ESC![0m
+    echo Certifique-se de colocar este Launcher na mesma pasta do download do pacote .zip do jogo.
     echo.
     pause
-    goto :eof
+    goto Menu
 )
 
 echo.
-echo [1/4] Fechando processos da Steam em segundo plano...
+echo [1/4] Interrompendo instâncias ativas da Steam em segundo plano...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Process steam -ErrorAction SilentlyContinue | Stop-Process -Force"
 
 :AwaitClose
@@ -758,12 +782,12 @@ if not errorlevel 1 (
     goto AwaitClose
 )
 
-echo [2/4] Extraindo e injetando novos arquivos na sua biblioteca Steam...
-echo Arquivo zip detectado: %zipFile%
-echo Destino na Steam    : %steamDir%
+echo [2/4] Descompactando e alocando bibliotecas nativas na sua Steam...
+echo Arquivo zip   : %zipFile%
+echo Diretório alvo: %steamDir%
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '%zipFile%' -DestinationPath '%steamDir%' -Force"
 
-echo [3/4] Limpando e ajustando caches residuais para sincronizacao limpa...
+echo [3/4] Removendo arquivos temporarios e otimizando atalhos...
 for %%F in (
     "%steamDir%\\cache"
     "%steamDir%\\temp"
@@ -777,12 +801,12 @@ for %%F in (
     )
 )
 
-echo [4/4] Processo concluido com sucesso! Reabrindo a Steam...
+echo [4/4] Instalação Concluída perfeitamente! Reabrindo a Steam...
 start "" "%steamExe:"=%"
 echo.
-echo !ESC![38;2;16;185;129m[SUCESSO] O jogo ${gameTitle} foi instalado e sincronizado na sua Steam com exito!!ESC![0m
+echo !ESC![38;2;16;185;129m[🎉 SUCESSO] O seu título foi adicionado à biblioteca Steam com Save Cloud integrado!!ESC![0m
 echo.
-echo Pressione qualquer tecla para voltar ao menu Astra Store...
+echo Pressione qualquer tecla para voltar ao menu Astra Launcher...
 pause >nul
 goto Menu
 
@@ -801,35 +825,27 @@ if not errorlevel 1 (
     goto AwaitClose2
 )
 
-echo Inspecionando plugins e depotcache...
+echo Removendo manifestos e stplug-in...
 set "pasta1=%steamDir%\\config\\stplug-in"
 set "pasta2=%steamDir%\\depotcache"
 
-if exist "%pasta1%" (
-    echo - Removendo stplug-in...
-    rd /s /q "%pasta1%"
-) else (
-    echo - Nenhum stplug-in residual localizado.
-)
-
-if exist "%pasta2%" (
-    echo - Removendo depotcache...
-    rd /s /q "%pasta2%"
-) else (
-    echo - Depotcache ja esta completamente limpo.
-)
+if exist "%pasta1%" rd /s /q "%pasta1%"
+if exist "%pasta2%" rd /s /q "%pasta2%"
 
 echo.
-echo !ESC![38;2;16;185;129m[SUCESSO] Limpeza de desinstalacao concluida perfeitamente!!ESC![0m
+echo !ESC![38;2;16;185;129m[SUCESSO] Limpeza e revogacao executadas com perfeicao!!ESC![0m
 echo Reabrindo a Steam...
 start "" "%steamExe:"=%"
-goto :eof
+echo.
+echo Pressione qualquer tecla para voltar ao menu Astra Launcher...
+pause >nul
+goto Menu
 `;
     
-    res.setHeader('Content-disposition', 'attachment; filename=AstraAutomator.bat');
+    res.setHeader('Content-disposition', 'attachment; filename=AstraLauncher.bat');
     res.setHeader('Content-type', 'application/x-msdos-program');
     res.send(batScript);
-  } catch(e) { console.error(e); res.status(500).send('Erro ao gerar automator bat'); }
+  } catch(e) { console.error(e); res.status(500).send('Erro ao gerar launcher automator bat'); }
 });
 
 app.get('*', (req, res) => {
