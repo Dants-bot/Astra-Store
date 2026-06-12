@@ -508,6 +508,205 @@ app.post('/api/webhook', async (req, res) => {
 //  ROTA PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════════════════
+//  LAUNCHER & AUTOMATOR NATIVO (WINDOWS BATCH INSTALLER DINAÂMICO)
+// ════════════════════════════════════════════════════════════════════════════
+
+app.get('/api/automator', async (req, res) => {
+  try {
+    const { key, game } = req.query;
+    const gameTitle = game ? game : 'Astra Game';
+    
+    // Constrói um instalador Windows nativo premium com cores, logos e automação de Steam
+    const batScript = `@echo off
+setlocal enabledelayedexpansion
+chcp 65001 >nul
+mode con: cols=120 lines=40
+title Astra Launcher Automator — Ativação Oficial de Jogos
+
+:: Identificar arquivo .zip automaticamente no diretorio
+set "zipFile="
+for /f "delims=" %%Z in ('dir /b *.zip 2^>nul') do (
+    set "zipFile=%%Z"
+    goto FoundZip
+)
+:FoundZip
+
+:: Detectar caminho da Steam via Registro do Windows
+for /f "tokens=3*" %%A in ('reg query "HKCU\\Software\\Valve\\Steam" /v SteamExe 2^>nul') do (
+    set "steamExe=%%A %%B"
+)
+if not defined steamExe (
+    echo [ERRO] Nao foi possivel localizar o caminho da Steam no seu Registro do Windows.
+    echo Por favor, abra a Steam manualmente pelo menos uma vez ou instale a Steam.
+    pause
+    exit /b
+)
+for %%A in ("%steamExe%") do set "steamDir=%%~dpA"
+set "steamDir=%steamDir:~0,-1%"
+
+:: Cores para o gradiente de tema Cyber-Purple Astra
+set "ESC= "
+set "corBaseR=180"
+set "corBaseG=0"
+set "corBaseB=255"
+set "variacaoR=40"
+set "variacaoG=0"
+set "variacaoB=-80"
+for /L %%j in (0,1,98) do (
+    set /a "corR=corBaseR + (variacaoR * %%j / 98)"
+    set /a "corG=corBaseG + (variacaoG * %%j / 98)"
+    set /a "corB=corBaseB + (variacaoB * %%j / 98)"
+    set "esc[%%j]=!ESC![38;2;!corR!;!corG!;!corB!m"
+)
+
+:: Banner Oficial Astra Store Premium
+set "lines[0]=                                                                        "
+set "lines[1]=                                                                        "
+set "lines[2]=   █████  ███████ ████████ ██████   █████                              "
+set "lines[3]=  ██   ██ ██         ██    ██   ██ ██   ██                             "
+set "lines[4]=  ███████ ███████    ██    ██████  ███████                             "
+set "lines[5]=  ██   ██      ██    ██    ██   ██ ██   ██                             "
+set "lines[6]=  ██   ██ ███████    ██    ██   ██ ██   ██                             "
+set "lines[7]=                                                                        "
+
+:Menu
+cls
+for /L %%i in (0,1,7) do (
+    set "line=!lines[%%i]!"
+    set "colored="
+    for /L %%j in (0,1,98) do (
+        set "char=!line:~%%j,1!"
+        if "!char!"==" " (set "char= ")
+        set "colored=!colored!!esc[%%j]!!char!"
+    )
+    echo(!colored!!ESC![0m
+)
+echo.
+echo !ESC![38;2;0;240;255m================================================================================!ESC![0m
+echo   NOME DO JOGO : ${gameTitle}
+echo   CHAVE DE ATIVACAO: ${key || 'G7!qZ#2vL@9pXr$4Nw'}
+echo   CAMINHO STEAM: %steamDir%
+echo !ESC![38;2;0;240;255m================================================================================!ESC![0m
+echo.
+echo   1. Instalar Jogo na Steam Automaticamente
+echo   2. Desinstalar Jogos (Limpar titulos ativados e depotcache da Steam)
+echo   3. Sair do Instalador
+echo.
+set /p option=!ESC![38;2;236;72;153mEscolha uma opcao para iniciar a automacao: !ESC![0m
+
+if "%option%"=="1" (
+    call :InstalarJogos
+    pause
+    goto Menu
+) else if "%option%"=="2" (
+    call :DesinstalarArquivos
+    pause
+    goto Menu
+) else if "%option%"=="3" (
+    exit /b
+) else (
+    echo [AVISO] Opcao invalida!
+    timeout /t 1 >nul
+    goto Menu
+)
+goto :eof
+
+:: ================================================================================
+:: INSTALAR JOGOS NA STEAM AUTOMATICAMENTE
+:: ================================================================================
+:InstalarJogos
+if not defined zipFile (
+    echo.
+    echo !ESC![38;2;239;68;68m[ERRO] Nenhum arquivo .zip do jogo foi encontrado na pasta atual.!ESC![0m
+    echo Por favor, coloque este script AstraAutomator.bat na mesma pasta onde voce baixou o arquivo .zip do jogo.
+    echo.
+    pause
+    goto :eof
+)
+
+echo.
+echo [1/4] Fechando processos da Steam em segundo plano...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Process steam -ErrorAction SilentlyContinue | Stop-Process -Force"
+
+:AwaitClose
+tasklist | find /i "steam.exe" >nul
+if not errorlevel 1 (
+    timeout /t 1 >nul
+    goto AwaitClose
+)
+
+echo [2/4] Extraindo e injetando novos arquivos na sua biblioteca Steam...
+echo Arquivo zip detectado: %zipFile%
+echo Destino na Steam    : %steamDir%
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '%zipFile%' -DestinationPath '%steamDir%' -Force"
+
+echo [3/4] Limpando e ajustando caches residuais para sincronizacao limpa...
+for %%F in (
+    "%steamDir%\\cache"
+    "%steamDir%\\temp"
+    "%steamDir%\\tmp"
+    "*.tmp"
+    "*.bak"
+) do (
+    if exist %%~F (
+        rd /s /q "%%~F" >nul 2>&1
+        del /f /q "%%~F" >nul 2>&1
+    )
+)
+
+echo [4/4] Processo concluido com sucesso! Reabrindo a Steam...
+start "" "%steamExe:"=%"
+echo.
+echo !ESC![38;2;16;185;129m[SUCESSO] O jogo ${gameTitle} foi instalado e sincronizado na sua Steam com exito!!ESC![0m
+goto :eof
+
+:: ================================================================================
+:: DESINSTALAR JOGOS E LIMPAR PLUGINS STEAM
+:: ================================================================================
+:DesinstalarArquivos
+echo.
+echo Fechando a Steam antes da desinstalacao...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Process steam -ErrorAction SilentlyContinue | Stop-Process -Force"
+
+:AwaitClose2
+tasklist | find /i "steam.exe" >nul
+if not errorlevel 1 (
+    timeout /t 1 >nul
+    goto AwaitClose2
+)
+
+echo Inspecionando plugins e depotcache...
+set "pasta1=%steamDir%\\config\\stplug-in"
+set "pasta2=%steamDir%\\depotcache"
+
+if exist "%pasta1%" (
+    echo - Removendo stplug-in...
+    rd /s /q "%pasta1%"
+) else (
+    echo - Nenhum stplug-in residual localizado.
+)
+
+if exist "%pasta2%" (
+    echo - Removendo depotcache...
+    rd /s /q "%pasta2%"
+) else (
+    echo - Depotcache ja esta completamente limpo.
+)
+
+echo.
+echo !ESC![38;2;16;185;129m[SUCESSO] Limpeza de desinstalacao concluida perfeitamente!!ESC![0m
+echo Reabrindo a Steam...
+start "" "%steamExe:"=%"
+goto :eof
+\`;
+    
+    res.setHeader('Content-disposition', 'attachment; filename=AstraAutomator.bat');
+    res.setHeader('Content-type', 'application/x-msdos-program');
+    res.send(batScript);
+  } catch(e) { console.error(e); res.status(500).send('Erro ao gerar automator bat'); }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
